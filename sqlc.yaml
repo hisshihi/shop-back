@@ -18,4 +18,4 @@ sql:
 
     # Дополнительные настройки для работы с базой данных
     database:
-      uri: "postgresql://root:secret@localhost:5432/order_services?sslmode=disable"
+      uri: "postgresql://root:secret@localhost:5432/shop_db?sslmode=disable"
