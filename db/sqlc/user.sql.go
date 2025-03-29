@@ -14,11 +14,12 @@ INSERT INTO users (
   username, 
   email, 
   password, 
-  role
+  role,
+  phone
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
-RETURNING id, username, email, password, role, bonus_points, created_at, updated_at
+RETURNING id, username, email, password, role, phone, is_banned, bonus_points, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -26,6 +27,7 @@ type CreateUserParams struct {
 	Email    string   `json:"email"`
 	Password string   `json:"password"`
 	Role     UserRole `json:"role"`
+	Phone    string   `json:"phone"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -34,6 +36,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Email,
 		arg.Password,
 		arg.Role,
+		arg.Phone,
 	)
 	var i User
 	err := row.Scan(
@@ -42,6 +45,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Email,
 		&i.Password,
 		&i.Role,
+		&i.Phone,
+		&i.IsBanned,
 		&i.BonusPoints,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -60,7 +65,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, email, password, role, bonus_points, created_at, updated_at FROM users 
+SELECT id, username, email, password, role, phone, is_banned, bonus_points, created_at, updated_at FROM users 
 WHERE id = $1 LIMIT 1
 `
 
@@ -73,6 +78,8 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Email,
 		&i.Password,
 		&i.Role,
+		&i.Phone,
+		&i.IsBanned,
 		&i.BonusPoints,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -81,7 +88,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, username, email, password, role, bonus_points, created_at, updated_at FROM users 
+SELECT id, username, email, password, role, phone, is_banned, bonus_points, created_at, updated_at FROM users 
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -107,6 +114,8 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.Email,
 			&i.Password,
 			&i.Role,
+			&i.Phone,
+			&i.IsBanned,
 			&i.BonusPoints,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -132,9 +141,10 @@ SET
   password = $4,
   role = $5,
   bonus_points = $6,
+  phone = $7,
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, username, email, password, role, bonus_points, created_at, updated_at
+RETURNING id, username, email, password, role, phone, is_banned, bonus_points, created_at, updated_at
 `
 
 type UpdateUserParams struct {
@@ -144,6 +154,7 @@ type UpdateUserParams struct {
 	Password    string   `json:"password"`
 	Role        UserRole `json:"role"`
 	BonusPoints int32    `json:"bonus_points"`
+	Phone       string   `json:"phone"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -154,6 +165,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.Password,
 		arg.Role,
 		arg.BonusPoints,
+		arg.Phone,
 	)
 	var i User
 	err := row.Scan(
@@ -162,6 +174,8 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Email,
 		&i.Password,
 		&i.Role,
+		&i.Phone,
+		&i.IsBanned,
 		&i.BonusPoints,
 		&i.CreatedAt,
 		&i.UpdatedAt,

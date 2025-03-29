@@ -17,6 +17,8 @@ CREATE TABLE "users" (
   "email" varchar(255) UNIQUE NOT NULL,
   "password" varchar(255) NOT NULL,
   "role" user_role NOT NULL,
+  "phone" varchar(255) NOT NULL UNIQUE,
+  "is_banned" boolean NOT NULL DEFAULT false,
   "bonus_points" integer NOT NULL DEFAULT 0,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())

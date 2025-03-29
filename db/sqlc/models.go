@@ -200,7 +200,9 @@ type User struct {
 	// Хешированный пароль
 	Password string `json:"password"`
 	// user или admin
-	Role UserRole `json:"role"`
+	Role     UserRole `json:"role"`
+	Phone    string   `json:"phone"`
+	IsBanned bool     `json:"is_banned"`
 	// Накопительные бонусы
 	BonusPoints int32     `json:"bonus_points"`
 	CreatedAt   time.Time `json:"created_at"`

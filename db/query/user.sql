@@ -3,9 +3,10 @@ INSERT INTO users (
   username, 
   email, 
   password, 
-  role
+  role,
+  phone
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING *;
 
@@ -27,6 +28,7 @@ SET
   password = $4,
   role = $5,
   bonus_points = $6,
+  phone = $7,
   updated_at = NOW()
 WHERE id = $1
 RETURNING *;
