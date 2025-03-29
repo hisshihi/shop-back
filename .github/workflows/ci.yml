@@ -22,7 +22,7 @@ jobs:
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: secret
-          POSTGRES_DB: order_services
+          POSTGRES_DB: shop_db
         # Установка проверок, что postgres правильно запущен
         options: --health-cmd pg_isready
           --health-interval 10s
