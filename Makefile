@@ -19,4 +19,7 @@ sqlc:
 test:
 	go test -v -cover -race -count=1 -timeout=5m ./...
 
-.PHONY: createdb dropdb postgres migrateup migratedown sqlc test
+server:
+	go run cmd/main.go
+
+.PHONY: createdb dropdb postgres migrateup migratedown sqlc test server
