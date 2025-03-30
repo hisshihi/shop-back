@@ -24,18 +24,20 @@ const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   username, 
   email, 
+  fullname,
   password, 
   role,
   phone
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6
 )
-RETURNING id, username, email, password, role, phone, is_banned, bonus_points, created_at, updated_at
+RETURNING id, username, email, fullname, password, role, phone, is_banned, bonus_points, created_at, updated_at
 `
 
 type CreateUserParams struct {
 	Username string   `json:"username"`
 	Email    string   `json:"email"`
+	Fullname string   `json:"fullname"`
 	Password string   `json:"password"`
 	Role     UserRole `json:"role"`
 	Phone    string   `json:"phone"`
@@ -45,6 +47,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	row := q.db.QueryRowContext(ctx, createUser,
 		arg.Username,
 		arg.Email,
+		arg.Fullname,
 		arg.Password,
 		arg.Role,
 		arg.Phone,
@@ -54,6 +57,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ID,
 		&i.Username,
 		&i.Email,
+		&i.Fullname,
 		&i.Password,
 		&i.Role,
 		&i.Phone,
@@ -76,7 +80,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, email, password, role, phone, is_banned, bonus_points, created_at, updated_at FROM users 
+SELECT id, username, email, fullname, password, role, phone, is_banned, bonus_points, created_at, updated_at FROM users 
 WHERE id = $1 LIMIT 1
 `
 
@@ -87,6 +91,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.ID,
 		&i.Username,
 		&i.Email,
+		&i.Fullname,
 		&i.Password,
 		&i.Role,
 		&i.Phone,
@@ -99,7 +104,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, username, email, password, role, phone, is_banned, bonus_points, created_at, updated_at FROM users 
+SELECT id, username, email, fullname, password, role, phone, is_banned, bonus_points, created_at, updated_at FROM users 
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -123,6 +128,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.ID,
 			&i.Username,
 			&i.Email,
+			&i.Fullname,
 			&i.Password,
 			&i.Role,
 			&i.Phone,
@@ -149,17 +155,19 @@ UPDATE users
 SET 
   username = $2,
   email = $3,
-  password = $4,
-  phone = $5,
+  fullname = $4,
+  password = $5,
+  phone = $6,
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, username, email, password, role, phone, is_banned, bonus_points, created_at, updated_at
+RETURNING id, username, email, fullname, password, role, phone, is_banned, bonus_points, created_at, updated_at
 `
 
 type UpdateUserParams struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
+	Fullname string `json:"fullname"`
 	Password string `json:"password"`
 	Phone    string `json:"phone"`
 }
@@ -169,6 +177,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.ID,
 		arg.Username,
 		arg.Email,
+		arg.Fullname,
 		arg.Password,
 		arg.Phone,
 	)
@@ -177,6 +186,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.ID,
 		&i.Username,
 		&i.Email,
+		&i.Fullname,
 		&i.Password,
 		&i.Role,
 		&i.Phone,

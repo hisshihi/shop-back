@@ -2,11 +2,12 @@
 INSERT INTO users (
   username, 
   email, 
+  fullname,
   password, 
   role,
   phone
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING *;
 
@@ -28,8 +29,9 @@ UPDATE users
 SET 
   username = $2,
   email = $3,
-  password = $4,
-  phone = $5,
+  fullname = $4,
+  password = $5,
+  phone = $6,
   updated_at = NOW()
 WHERE id = $1
 RETURNING *;

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hisshihi/shop-back/db/sqlc"
+	"github.com/hisshihi/shop-back/pkg/util"
 	"github.com/lib/pq"
 )
 
@@ -29,10 +30,15 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
+	hashedPassword, err := util.HashPassword(req.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
 	arg := sqlc.CreateUserParams{
 		Username: req.Username,
 		Email:    req.Email,
-		Password: req.Password,
+		Password: hashedPassword,
 		Role:     sqlc.UserRoleUser,
 		Phone:    req.Phone,
 	}

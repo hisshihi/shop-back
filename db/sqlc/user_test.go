@@ -17,6 +17,7 @@ func createRandomUser(t *testing.T) User {
 	arg := CreateUserParams{
 		Username: gofakeit.Username(),
 		Email:    gofakeit.Email(),
+		Fullname: gofakeit.Name(),
 		Password: hashedPassword,
 		Role:     UserRoleUser,
 		Phone:    gofakeit.Phone(),
@@ -28,6 +29,7 @@ func createRandomUser(t *testing.T) User {
 
 	require.Equal(t, arg.Username, user.Username)
 	require.Equal(t, arg.Email, user.Email)
+	require.Equal(t, arg.Fullname, user.Fullname)
 	require.Equal(t, arg.Password, user.Password)
 	require.Equal(t, arg.Role, user.Role)
 	require.Equal(t, arg.Phone, user.Phone)
@@ -51,6 +53,7 @@ func TestGetUserByID(t *testing.T) {
 	require.Equal(t, user1.ID, user2.ID)
 	require.Equal(t, user1.Username, user2.Username)
 	require.Equal(t, user1.Email, user2.Email)
+	require.Equal(t, user1.Fullname, user2.Fullname)
 	require.Equal(t, user1.Password, user2.Password)
 	require.Equal(t, user1.Role, user2.Role)
 	require.Equal(t, user1.Phone, user2.Phone)
@@ -66,6 +69,7 @@ func TestUpdateUser(t *testing.T) {
 	arg := UpdateUserParams{
 		ID:       user1.ID,
 		Username: gofakeit.Username(),
+		Fullname: gofakeit.Name(),
 		Email:    gofakeit.Email(),
 		Password: hashedPassword,
 		Phone:    gofakeit.Phone(),
@@ -78,6 +82,7 @@ func TestUpdateUser(t *testing.T) {
 	require.Equal(t, user1.ID, user2.ID)
 	require.Equal(t, arg.Username, user2.Username)
 	require.Equal(t, arg.Email, user2.Email)
+	require.Equal(t, arg.Fullname, user2.Fullname)
 	require.Equal(t, arg.Password, user2.Password)
 	require.Equal(t, arg.Phone, user2.Phone)
 	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
@@ -100,7 +105,7 @@ func TestListAccount(t *testing.T) {
 	}
 
 	arg := ListUsersParams{
-		Limit: 5,
+		Limit:  5,
 		Offset: 5,
 	}
 
@@ -123,6 +128,6 @@ func TestCountUsers(t *testing.T) {
 
 	finalCount, err := testQueries.CountUsers(context.Background())
 	require.NoError(t, err)
-	
+
 	require.Equal(t, initialCount+10, finalCount)
 }

@@ -15,6 +15,7 @@ CREATE TABLE "users" (
   "id" bigserial PRIMARY KEY,
   "username" varchar(255) UNIQUE NOT NULL,
   "email" varchar(255) UNIQUE NOT NULL,
+  "fullname" varchar(255) NOT NULL,
   "password" varchar(255) NOT NULL,
   "role" user_role NOT NULL,
   "phone" varchar(255) NOT NULL UNIQUE,

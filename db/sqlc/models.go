@@ -196,7 +196,8 @@ type User struct {
 	// Имя пользователя для входа
 	Username string `json:"username"`
 	// Для авторизации и восстановления пароля
-	Email string `json:"email"`
+	Email    string `json:"email"`
+	Fullname string `json:"fullname"`
 	// Хешированный пароль
 	Password string `json:"password"`
 	// user или admin
