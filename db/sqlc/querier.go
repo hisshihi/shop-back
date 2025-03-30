@@ -9,6 +9,11 @@ import (
 )
 
 type Querier interface {
+	CountFavorit(ctx context.Context) (int64, error)
+	CountOrders(ctx context.Context) (int64, error)
+	CountProducts(ctx context.Context) (int64, error)
+	CountPromotions(ctx context.Context) (int64, error)
+	CountReviews(ctx context.Context) (int64, error)
 	CountUsers(ctx context.Context) (int64, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateFavorite(ctx context.Context, arg CreateFavoriteParams) (Favorite, error)

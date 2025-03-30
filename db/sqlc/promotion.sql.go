@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+const countPromotions = `-- name: CountPromotions :one
+SELECT COUNT(*) FROM promotions
+`
+
+func (q *Queries) CountPromotions(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countPromotions)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createPromotion = `-- name: CreatePromotion :one
 INSERT INTO promotions (
   name, 

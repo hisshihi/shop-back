@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const countFavorit = `-- name: CountFavorit :one
+SELECT COUNT(*) FROM favorites
+`
+
+func (q *Queries) CountFavorit(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countFavorit)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createFavorite = `-- name: CreateFavorite :one
 INSERT INTO favorites (
   user_id, 

@@ -20,6 +20,9 @@ ORDER BY id
 LIMIT $1
 OFFSET $2;
 
+-- name: CountOrders :one
+SELECT COUNT(*) FROM orders;
+
 -- name: UpdateOrderStatus :one
 UPDATE orders
 SET 

@@ -20,6 +20,9 @@ ORDER BY id
 LIMIT $2
 OFFSET $3;
 
+-- name: CountReviews :one
+SELECT COUNT(*) FROM reviews;
+
 -- name: UpdateReview :one
 UPDATE reviews
 SET 

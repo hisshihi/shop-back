@@ -20,6 +20,9 @@ ORDER BY id
 LIMIT $1
 OFFSET $2;
 
+-- name: CountProducts :one
+SELECT COUNT(*) FROM products;
+
 -- name: UpdateProduct :one
 UPDATE products
 SET 

@@ -19,6 +19,9 @@ ORDER BY id
 LIMIT $1
 OFFSET $2;
 
+-- name: CountPromotions :one
+SELECT COUNT(*) FROM promotions;
+
 -- name: UpdatePromotion :one
 UPDATE promotions
 SET 
