@@ -7,14 +7,17 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/hisshihi/shop-back/pkg/util"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomUser(t *testing.T) User {
+	hashedPassword, err := util.HashPassword(gofakeit.Password(true, true, true, true, false, 6))
+	require.NoError(t, err)
 	arg := CreateUserParams{
 		Username: gofakeit.Username(),
 		Email:    gofakeit.Email(),
-		Password: gofakeit.Password(true, true, true, true, false, 6),
+		Password: hashedPassword,
 		Role:     UserRoleUser,
 		Phone:    gofakeit.Phone(),
 	}
@@ -57,11 +60,14 @@ func TestGetUserByID(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	user1 := createRandomUser(t)
 
+	hashedPassword, err := util.HashPassword(gofakeit.Password(true, true, true, true, false, 6))
+	require.NoError(t, err)
+
 	arg := UpdateUserParams{
 		ID:       user1.ID,
 		Username: gofakeit.Username(),
 		Email:    gofakeit.Email(),
-		Password: gofakeit.Password(true, true, true, true, true, 6),
+		Password: hashedPassword,
 		Phone:    gofakeit.Phone(),
 	}
 
