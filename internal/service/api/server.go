@@ -61,8 +61,12 @@ func (server *Server) setupServer() {
 	}
 	router.Use(cors.New(corsConfig))
 
-	router.POST("/users", server.createUser)
-	router.GET("/users/:id", server.createUser)
+	apiGroup := router.Group("/api/v1")
+
+	apiGroup.POST("/users", server.createUser)
+	apiGroup.GET("/admin/users/:id", server.getUserByIDForAdmin)
+	apiGroup.GET("/users/:id", server.getUserByID)
+	apiGroup.GET("/users/list", server.listUsers)
 
 	server.router = router
 }

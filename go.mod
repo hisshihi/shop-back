@@ -3,6 +3,7 @@ module github.com/hisshihi/shop-back
 go 1.24.1
 
 require (
+	github.com/brianvoe/gofakeit/v7 v7.2.1
 	github.com/gin-contrib/cors v1.7.4
 	github.com/gin-gonic/gin v1.10.0
 	github.com/lib/pq v1.10.9
