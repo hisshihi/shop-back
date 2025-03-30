@@ -122,7 +122,7 @@ func (server *Server) getUserByID(ctx *gin.Context) {
 }
 
 type listUsersRequest struct {
-	PageID int32 `form:"page_id" binding:"required,min=1"`
+	PageID   int32 `form:"page_id" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
 }
 
@@ -134,7 +134,7 @@ func (server *Server) listUsers(ctx *gin.Context) {
 	}
 
 	arg := sqlc.ListUsersParams{
-		Limit: int64(req.PageSize),
+		Limit:  int64(req.PageSize),
 		Offset: int64((req.PageID - 1) * req.PageSize),
 	}
 
@@ -151,7 +151,23 @@ func (server *Server) listUsers(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"users": users,
+		"users":       users,
 		"users_count": usersCount,
 	})
+}
+
+type updateUserRequest struct {
+	Username string `json:"username" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=6"`
+	Phone    string `json:"phone" binding:"required"`
+}
+
+func (server *Server) updateUser(ctx *gin.Context) {
+	var req updateUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
 }
