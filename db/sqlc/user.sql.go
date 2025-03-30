@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const countUsers = `-- name: CountUsers :one
+SELECT COUNT(*) FROM users
+`
+
+func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUsers)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   username, 
@@ -139,22 +150,18 @@ SET
   username = $2,
   email = $3,
   password = $4,
-  role = $5,
-  bonus_points = $6,
-  phone = $7,
+  phone = $5,
   updated_at = NOW()
 WHERE id = $1
 RETURNING id, username, email, password, role, phone, is_banned, bonus_points, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	ID          int64    `json:"id"`
-	Username    string   `json:"username"`
-	Email       string   `json:"email"`
-	Password    string   `json:"password"`
-	Role        UserRole `json:"role"`
-	BonusPoints int32    `json:"bonus_points"`
-	Phone       string   `json:"phone"`
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Phone    string `json:"phone"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -163,8 +170,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.Username,
 		arg.Email,
 		arg.Password,
-		arg.Role,
-		arg.BonusPoints,
 		arg.Phone,
 	)
 	var i User

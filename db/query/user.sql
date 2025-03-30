@@ -20,15 +20,16 @@ ORDER BY id
 LIMIT $1
 OFFSET $2;
 
+-- name: CountUsers :one
+SELECT COUNT(*) FROM users;
+
 -- name: UpdateUser :one
 UPDATE users
 SET 
   username = $2,
   email = $3,
   password = $4,
-  role = $5,
-  bonus_points = $6,
-  phone = $7,
+  phone = $5,
   updated_at = NOW()
 WHERE id = $1
 RETURNING *;
