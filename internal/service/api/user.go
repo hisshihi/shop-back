@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -115,19 +116,13 @@ type getUserByIDResponse struct {
 }
 
 func (server *Server) getUserByID(ctx *gin.Context) {
-	var req getUserByIDRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	user, err := server.store.GetUserByID(ctx, req.ID)
+	user, err := server.getUserDataFromToken(ctx)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("пользователь не найден")))
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("ошибка при получении пользователя")))
 		return
 	}
 

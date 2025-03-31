@@ -1,6 +1,8 @@
 package api
 
 import (
+	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -14,6 +16,7 @@ import (
 	"github.com/hisshihi/shop-back/internal/config"
 	"github.com/hisshihi/shop-back/internal/service"
 	"github.com/hisshihi/shop-back/pkg/util"
+	"github.com/lib/pq"
 	"golang.org/x/time/rate"
 )
 
@@ -39,7 +42,6 @@ type Server struct {
 	tokenMaker util.Maker
 	router     *gin.Engine
 	config     config.Config
-	maker      util.Maker
 }
 
 func NewServer(store *service.Store, config config.Config) (*Server, error) {
@@ -93,16 +95,21 @@ func (server *Server) setupServer() {
 	// Маршруты доступные всем авторизированным пользователям
 	authRouts := apiGroup.Group("/")
 	authRouts.Use(server.authMiddleware())
-	authRouts.GET("/users/:id", server.getUserByID)
-	authRouts.GET("/users/list", server.listUsers)
+	authRouts.GET("/users", server.getUserByID)
 
 	// Маршруты доступные администратору
 	adminRoutes := apiGroup.Group("/admin")
 	adminRoutes.Use(server.authMiddleware())
 	adminRoutes.Use(server.roleCheckMiddleware(string(sqlc.UserRoleAdmin)))
-	adminRoutes.GET("/admin/users/:id", server.getUserByIDForAdmin)
+	adminRoutes.GET("/users/:id", server.getUserByIDForAdmin)
+	adminRoutes.GET("/users/list", server.listUsers)
 
 	server.router = router
+
+	// Создание пользователей
+	if err := server.createDefaultUser(); err != nil {
+		fmt.Printf("Не удалось создать пользователей по умоланию: %v\n", err)
+	}
 }
 
 func (server *Server) Start(address string) error {
@@ -138,7 +145,7 @@ func (server *Server) authMiddleware() gin.HandlerFunc {
 		}
 
 		accessToken := fields[1]
-		payload, err := server.maker.VerifyToken(accessToken)
+		payload, err := server.tokenMaker.VerifyToken(accessToken)
 		if err != nil {
 			// Более информативные сообщения в зависимости от типа ошибки
 			var errorMsg string
@@ -162,7 +169,7 @@ func (server *Server) authMiddleware() gin.HandlerFunc {
 
 		// Проверяем, не заблокирован ли пользователь
 		user, err := server.store.GetUser(c, payload.Username)
-		if err == nil && !user.IsBanned {
+		if err == nil && user.IsBanned {
 			err := errors.New("ваш аккаунт заблокирован")
 			c.AbortWithStatusJSON(http.StatusForbidden, errorResponse(err))
 			return
@@ -203,4 +210,77 @@ func (server *Server) roleCheckMiddleware(allowedRoles ...string) gin.HandlerFun
 
 		c.Next()
 	}
+}
+
+func (server *Server) getUserDataFromToken(ctx *gin.Context) (sqlc.User, error) {
+	// Получаем payload из токена авторизации
+	payload, exists := ctx.Get(authorizationPayloadKey)
+	if !exists {
+		err := errors.New("требуется авторизация")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return sqlc.User{}, err
+	}
+
+	// Приводим payload к нужному типу
+	tokenPayload, ok := payload.(*util.Payload)
+	if !ok {
+		err := errors.New("неверный тип payload")
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return sqlc.User{}, err
+	}
+
+	// Получаем пользователя по ID из токена
+	user, err := server.store.GetUser(ctx, tokenPayload.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("пользователь не найден")))
+			return sqlc.User{}, err
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return sqlc.User{}, err
+	}
+
+	return user, nil
+}
+
+func (server *Server) createDefaultUser() error {
+	if err := server.createUserWithRole("admin", "admin", "admin@example.com", "123456", "79999999999", sqlc.UserRoleAdmin); err != nil {
+		return fmt.Errorf("ошибка при создании администратора: %w", err)
+	}
+
+	if err := server.createUserWithRole("user", "client", "client@example.com", "123456", "78888888888", sqlc.UserRoleUser); err != nil {
+		return fmt.Errorf("ошибка при создании пользователя: %w", err)
+	}
+	return nil
+}
+
+// Создание пользователей по умолчанию
+func (server *Server) createUserWithRole(username, fullname, email, password, phone string, role sqlc.UserRole) error {
+	hashedPassword, err := util.HashPassword(password)
+	if err != nil {
+		return fmt.Errorf("ошибка при хешировании пароля: %w", err)
+	}
+
+	arg := sqlc.CreateUserParams{
+		Username: username,
+		Email:    email,
+		Fullname: fullname,
+		Password: hashedPassword,
+		Role:     role,
+		Phone:    phone,
+	}
+
+	_, err = server.store.CreateUser(context.Background(), arg)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "unique_violation":
+				fmt.Printf("Пользователь %v (%v) уже существует в системе\n", username, role)
+				return nil
+			}
+		}
+		return err
+	}
+	fmt.Printf("Пользователь %v (%v) успешно создан\n", username, role)
+	return nil
 }
