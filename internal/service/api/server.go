@@ -2,12 +2,15 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/hisshihi/shop-back/internal/config"
 	"github.com/hisshihi/shop-back/internal/service"
+	"github.com/hisshihi/shop-back/pkg/util"
 	"golang.org/x/time/rate"
 )
 
@@ -23,16 +26,26 @@ func rateLimiter(c *gin.Context) {
 }
 
 type Server struct {
-	store *service.Store
-	router *gin.Engine
+	store      *service.Store
+	tokenMaker util.Maker
+	router     *gin.Engine
+	config     config.Config
 }
 
-func NewServer(store *service.Store) *Server {
-	server := &Server{store: store}
+func NewServer(store *service.Store, config config.Config) (*Server, error) {
+	tokenMaker, err := util.NewPasetoMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot load config: %w", err)
+	}
+	server := &Server{
+		store:      store,
+		tokenMaker: tokenMaker,
+		config:     config,
+	}
 
 	server.setupServer()
 
-	return server
+	return server, nil
 }
 
 func (server *Server) setupServer() {
@@ -78,3 +91,4 @@ func (server *Server) Start(address string) error {
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
 }
+
