@@ -60,6 +60,12 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
+	accessToken, err := server.tokenMaker.CreateToken(user.Username, string(user.Role), server.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	rsp := userResponse{
 		Username: user.Username,
 		Email:    user.Email,
@@ -68,7 +74,10 @@ func (server *Server) createUser(ctx *gin.Context) {
 		Role:     user.Role,
 	}
 
-	ctx.JSON(http.StatusOK, rsp)
+	ctx.JSON(http.StatusOK, gin.H{
+		"access_token": accessToken,
+		"user":         rsp,
+	})
 }
 
 type getUserByIDRequest struct {
