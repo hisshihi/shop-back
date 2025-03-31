@@ -13,6 +13,7 @@ import (
 type createUserRequest struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
+	Fullname string `json:"fullname" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
 	Phone    string `json:"phone" binding:"required"`
 }
@@ -20,6 +21,7 @@ type createUserRequest struct {
 type createUserResponse struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
+	Fullname string `json:"fullname"`
 	Phone    string `json:"phone"`
 }
 
@@ -38,6 +40,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 	arg := sqlc.CreateUserParams{
 		Username: req.Username,
 		Email:    req.Email,
+		Fullname: req.Fullname,
 		Password: hashedPassword,
 		Role:     sqlc.UserRoleUser,
 		Phone:    req.Phone,
@@ -59,6 +62,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 	rsp := createUserResponse{
 		Username: user.Username,
 		Email:    user.Email,
+		Fullname: user.Fullname,
 		Phone:    user.Phone,
 	}
 
@@ -93,6 +97,7 @@ type getUserByIDResponse struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
+	Fullname string `json:"fullname"`
 	Role     string `json:"role"`
 	Phone    string `json:"phone"`
 	IsBanned bool   `json:"is_banned"`
@@ -119,6 +124,7 @@ func (server *Server) getUserByID(ctx *gin.Context) {
 		ID:       user.ID,
 		Username: user.Username,
 		Email:    user.Email,
+		Fullname: user.Fullname,
 		Role:     string(user.Role),
 		Phone:    user.Phone,
 		IsBanned: user.IsBanned,
@@ -165,6 +171,7 @@ func (server *Server) listUsers(ctx *gin.Context) {
 type updateUserRequest struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
+	Fullname string `json:"fullname" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
 	Phone    string `json:"phone" binding:"required"`
 }
