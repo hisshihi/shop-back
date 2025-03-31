@@ -106,6 +106,8 @@ func (server *Server) setupServer() {
 	adminRoutes.GET("/users/list", server.listUsers)
 	adminRoutes.DELETE("/users/:id", server.deleteUser)
 	adminRoutes.POST("/users/banned/:id", server.bannedUser)
+	adminRoutes.POST("/category", server.createCategory)
+	adminRoutes.GET("/category/list", server.listCategory)
 
 	server.router = router
 
