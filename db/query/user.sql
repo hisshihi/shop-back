@@ -43,3 +43,9 @@ WHERE id = $1;
 -- name: GetUser :one
 SELECT * FROM users
 WHERE username = $1;
+
+-- name: BannedUser :one
+UPDATE users
+SET is_banned = true 
+WHERE id = $1
+RETURNING *;

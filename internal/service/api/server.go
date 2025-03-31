@@ -89,13 +89,14 @@ func (server *Server) setupServer() {
 	// Маршруты доступные всем
 	apiGroup := router.Group("/api/v1")
 
-	apiGroup.POST("/users/login", server.loginUser)
+	apiGroup.POST("/login", server.loginUser)
 	apiGroup.POST("/users", server.createUser)
 
 	// Маршруты доступные всем авторизированным пользователям
 	authRouts := apiGroup.Group("/")
 	authRouts.Use(server.authMiddleware())
 	authRouts.GET("/users", server.getUserByID)
+	authRouts.PUT("/users", server.updateUser)
 
 	// Маршруты доступные администратору
 	adminRoutes := apiGroup.Group("/admin")
@@ -103,6 +104,8 @@ func (server *Server) setupServer() {
 	adminRoutes.Use(server.roleCheckMiddleware(string(sqlc.UserRoleAdmin)))
 	adminRoutes.GET("/users/:id", server.getUserByIDForAdmin)
 	adminRoutes.GET("/users/list", server.listUsers)
+	adminRoutes.DELETE("/users/:id", server.deleteUser)
+	adminRoutes.POST("/users/banned/:id", server.bannedUser)
 
 	server.router = router
 

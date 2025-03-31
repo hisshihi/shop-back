@@ -189,6 +189,82 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		return
 	}
 
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("ошибка входа")))
+		return
+	}
+
+	hashedPassword, err := util.HashPassword(req.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.UpdateUserParams{
+		ID:       user.ID,
+		Username: req.Username,
+		Email:    req.Email,
+		Fullname: req.Fullname,
+		Password: hashedPassword,
+		Phone:    req.Phone,
+	}
+
+	updateUser, err := server.store.UpdateUser(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := userResponse{
+		Username: updateUser.Username,
+		Email:    updateUser.Email,
+		Fullname: updateUser.Fullname,
+		Phone:    updateUser.Phone,
+		Role:     updateUser.Role,
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
+}
+
+func (server *Server) deleteUser(ctx *gin.Context) {
+	var req getUserByIDRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	err := server.store.DeleteUser(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, nil)
+}
+
+func (server *Server) bannedUser(ctx *gin.Context) {
+	var req getUserByIDRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	isBanned, err := server.store.BannedUser(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, isBanned)
 }
 
 type loginUserRequest struct {

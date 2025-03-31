@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	BannedUser(ctx context.Context, id int64) (User, error)
 	CountFavorit(ctx context.Context) (int64, error)
 	CountOrders(ctx context.Context) (int64, error)
 	CountProducts(ctx context.Context) (int64, error)

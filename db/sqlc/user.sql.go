@@ -9,6 +9,32 @@ import (
 	"context"
 )
 
+const bannedUser = `-- name: BannedUser :one
+UPDATE users
+SET is_banned = true 
+WHERE id = $1
+RETURNING id, username, email, fullname, password, role, phone, is_banned, bonus_points, created_at, updated_at
+`
+
+func (q *Queries) BannedUser(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRowContext(ctx, bannedUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.Fullname,
+		&i.Password,
+		&i.Role,
+		&i.Phone,
+		&i.IsBanned,
+		&i.BonusPoints,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const countUsers = `-- name: CountUsers :one
 SELECT COUNT(*) FROM users
 `
