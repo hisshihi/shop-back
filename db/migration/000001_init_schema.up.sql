@@ -27,7 +27,7 @@ CREATE TABLE "users" (
 
 CREATE TABLE "categories" (
   "id" bigserial PRIMARY KEY,
-  "name" varchar(255) NOT NULL,
+  "name" varchar(255) UNIQUE NOT NULL,
   "description" text,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
