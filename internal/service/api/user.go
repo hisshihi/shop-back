@@ -18,11 +18,12 @@ type createUserRequest struct {
 	Phone    string `json:"phone" binding:"required"`
 }
 
-type createUserResponse struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Fullname string `json:"fullname"`
-	Phone    string `json:"phone"`
+type userResponse struct {
+	Username string        `json:"username"`
+	Email    string        `json:"email"`
+	Fullname string        `json:"fullname"`
+	Phone    string        `json:"phone"`
+	Role     sqlc.UserRole `json:"role"`
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -59,11 +60,12 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	rsp := createUserResponse{
+	rsp := userResponse{
 		Username: user.Username,
 		Email:    user.Email,
 		Fullname: user.Fullname,
 		Phone:    user.Phone,
+		Role:     user.Role,
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
@@ -183,4 +185,57 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		return
 	}
 
+}
+
+type loginUserRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required,min=6"`
+}
+
+type loginUserResponse struct {
+	AccessToken string       `json:"access_token"`
+	User        userResponse `json:"user"`
+}
+
+func (server *Server) loginUser(ctx *gin.Context) {
+	var req loginUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUser(ctx, req.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = util.CheckPassword(req.Password, user.Password)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	accessToken, err := server.tokenMaker.CreateToken(user.Username, string(user.Role), server.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := loginUserResponse{
+		AccessToken: accessToken,
+		User: userResponse{
+			Username: user.Username,
+			Email:    user.Email,
+			Fullname: user.Fullname,
+			Phone:    user.Phone,
+			Role:     user.Role,
+		},
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
 }

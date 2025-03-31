@@ -76,6 +76,7 @@ func (server *Server) setupServer() {
 
 	apiGroup := router.Group("/api/v1")
 
+	apiGroup.POST("/user/login", server.loginUser)
 	apiGroup.POST("/users", server.createUser)
 	apiGroup.GET("/admin/users/:id", server.getUserByIDForAdmin)
 	apiGroup.GET("/users/:id", server.getUserByID)
