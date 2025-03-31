@@ -10,6 +10,17 @@ import (
 	"database/sql"
 )
 
+const countCategory = `-- name: CountCategory :one
+SELECT COUNT(*) FROM categories
+`
+
+func (q *Queries) CountCategory(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countCategory)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createCategory = `-- name: CreateCategory :one
 INSERT INTO categories (
   name, 

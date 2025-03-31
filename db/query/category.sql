@@ -17,6 +17,9 @@ ORDER BY id
 LIMIT $1
 OFFSET $2;
 
+-- name: CountCategory :one
+SELECT COUNT(*) FROM categories;
+
 -- name: UpdateCategory :one
 UPDATE categories
 SET 
