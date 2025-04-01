@@ -40,6 +40,7 @@ CREATE TABLE "products" (
   "description" text NOT NULL,
   "price" decimal(10,2) NOT NULL,
   "stock" integer NOT NULL,
+  "photo_url" bytea,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
