@@ -82,3 +82,44 @@ func (server *Server) listCategory(ctx *gin.Context) {
 		"category_count": categoryCount,
 	})
 }
+
+type getCategoryByIDRequest struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+type updateCategoryRequrest struct {
+	Name        string `json:"name" binding:"required,min=1"`
+	Descritpion string `json:"description"`
+}
+
+func (server *Server) updateCategory(ctx *gin.Context) {
+	var req updateCategoryRequrest
+	var reqID getCategoryByIDRequest
+	if err := ctx.ShouldBindUri(&reqID); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.UpdateCategoryParams{
+		ID:          reqID.ID,
+		Name:        req.Name,
+		Description: sql.NullString{String: req.Descritpion, Valid: true},
+	}
+
+	updateCategory, err := server.store.UpdateCategory(ctx, arg)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updateCategory)
+}
