@@ -25,7 +25,7 @@ func (server *Server) createLog(ctx *gin.Context, userID int64, action string) {
 
 type listLogRequest struct {
 	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=50"`
 }
 
 func (server *Server) listLog(ctx *gin.Context) {
