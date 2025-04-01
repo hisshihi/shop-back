@@ -102,6 +102,7 @@ func (server *Server) setupServer() {
 	authRouts.POST("/favorit", server.createFavorit)
 	authRouts.GET("/favorit/list", server.listFavorit)
 	authRouts.DELETE("/favorit/:id", server.deleteFavorit)
+	authRouts.POST("/order", server.createOrder)
 
 	// Маршруты доступные администратору
 	adminRoutes := apiGroup.Group("/admin")
