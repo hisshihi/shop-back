@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -74,6 +75,9 @@ func (server *Server) createUser(ctx *gin.Context) {
 		Phone:    user.Phone,
 		Role:     user.Role,
 	}
+
+	action := fmt.Sprintf("Создание пользователя ID: %v", user.ID)
+	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"access_token": accessToken,
@@ -224,6 +228,9 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		Role:     updateUser.Role,
 	}
 
+	action := fmt.Sprintf("Обновление пользователя ID: %v", user.ID)
+	server.createLog(ctx, user.ID, action)
+
 	ctx.JSON(http.StatusOK, rsp)
 }
 
@@ -316,6 +323,9 @@ func (server *Server) loginUser(ctx *gin.Context) {
 			Role:     user.Role,
 		},
 	}
+
+	action := fmt.Sprintf("Вход пользователя ID: %v", user.ID)
+	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusOK, rsp)
 }
