@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hisshihi/shop-back/db/sqlc"
+	"github.com/hisshihi/shop-back/internal/service"
 )
 
 type createProductRequest struct {
@@ -22,6 +23,7 @@ type createProductRequest struct {
 }
 
 type productResponse struct {
+	ID          int64  `json:"id"`
 	CategoryID  int64  `json:"category_id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -98,6 +100,7 @@ func (server *Server) createProduct(ctx *gin.Context) {
 	contentType := http.DetectContentType(photoBytes)
 
 	rsp := productResponse{
+		ID:          product.ID,
 		CategoryID:  product.CategoryID,
 		Name:        product.Name,
 		Description: product.Description,
@@ -108,4 +111,173 @@ func (server *Server) createProduct(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
+}
+
+type getProductByIDRequest struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) getProductByID(ctx *gin.Context) {
+	var req getProductByIDRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	product, err := server.store.GetProductByID(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := productResponse{
+		ID:          product.ID,
+		CategoryID:  product.CategoryID,
+		Name:        product.Name,
+		Description: product.Description,
+		Price:       product.Price,
+		Stock:       product.Stock,
+		PhotoUrl:    base64.StdEncoding.EncodeToString(product.PhotoUrl),
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
+}
+
+type listProductRequest struct {
+	PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+}
+
+func (server *Server) listProduct(ctx *gin.Context) {
+	var req listProductRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.ListProductsParams{
+		Limit:  int64(req.PageSize),
+		Offset: int64((req.PageID - 1) * req.PageSize),
+	}
+
+	listProducts, err := server.store.ListProducts(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	countProducts, err := server.store.CountProducts(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"products":       listProducts,
+		"products_count": countProducts,
+	})
+}
+
+type updateProductRequest struct {
+	CategoryID  int64                 `form:"category_id" binding:"required,min=1"`
+	Name        string                `form:"name" binding:"required"`
+	Description string                `form:"description" binding:"required"`
+	Price       string                `form:"price" binding:"required"`
+	Stock       int32                 `form:"stock" binding:"required,min=1"`
+	PhotoUrl    *multipart.FileHeader `form:"photo_url" binding:"required"`
+}
+
+func (server *Server) updateProduct(ctx *gin.Context) {
+	var reqID getProductByIDRequest
+	var req updateProductRequest
+	if err := ctx.ShouldBindUri(&reqID); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if err := ctx.ShouldBind(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	findProduct, err := server.store.GetProductByID(ctx, reqID.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	var photoBytes []byte
+	if req.PhotoUrl.Header != nil {
+		if req.PhotoUrl != nil {
+			if req.PhotoUrl.Size > photoSize {
+				ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("размер файла превышает 3МБ")))
+				return
+			}
+
+			file, err := req.PhotoUrl.Open()
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+				return
+			}
+			defer file.Close()
+
+			photoBytes, err = io.ReadAll(file)
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+				return
+			}
+		} else {
+			photoBytes = findProduct.PhotoUrl
+		}
+	} else {
+		photoBytes = findProduct.PhotoUrl
+	}
+
+	arg := sqlc.UpdateProductParams{
+		ID:          findProduct.ID,
+		CategoryID:  req.CategoryID,
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+		Stock:       req.Stock,
+		PhotoUrl:    photoBytes,
+	}
+
+	updateProduct, err := server.store.UpdateProduct(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updateProduct)
+}
+
+func (server *Server) deleteProduct(ctx *gin.Context) {
+	var req getProductByIDRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := service.DeleteProductTxParams{
+		ProductID: req.ID,
+	}
+	result, err := server.store.TransferTxDeleteProduct(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err})
+	}
+
+	if !result.DeleteProduct {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Товар не найден"})
+	}
+
+	ctx.JSON(http.StatusNoContent, nil)
 }

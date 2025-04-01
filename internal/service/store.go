@@ -15,7 +15,7 @@ type Store struct {
 
 func NewStore(db *sql.DB) *Store {
 	return &Store{
-		db: db,
+		db:      db,
 		Queries: sqlc.New(db),
 	}
 }
@@ -38,4 +38,37 @@ func (store *Store) execTx(ctx context.Context, fn func(*sqlc.Queries) error) er
 	return tx.Commit()
 }
 
-// func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {}
+type DeleteProductTxParams struct {
+	ProductID int64
+}
+
+type DeleteProductTxResult struct {
+	DeleteFavorit int64
+	DeleteProduct bool
+}
+
+func (store *Store) TransferTxDeleteProduct(ctx context.Context, arg DeleteProductTxParams) (DeleteProductTxResult, error) {
+	var result DeleteProductTxResult
+
+	err := store.execTx(ctx, func(q *sqlc.Queries) error {
+		var err error
+
+		deleteFavorite, err := q.DeleteFavoriteByProductID(ctx, arg.ProductID)
+		if err != nil {
+			return fmt.Errorf("ошибка при удалении избранного %w", err)
+		}
+		result.DeleteFavorit = deleteFavorite
+
+		err = q.DeleteProduct(ctx, arg.ProductID)
+		if err != nil {
+			return fmt.Errorf("ошибка при удалении товара %w", err)
+		}
+
+		result.DeleteProduct = true
+
+		return nil
+	})
+
+	return result, err
+}
+
