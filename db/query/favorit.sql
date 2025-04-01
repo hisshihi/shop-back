@@ -24,3 +24,7 @@ SELECT COUNT(*) FROM favorites;
 -- name: DeleteFavorite :exec
 DELETE FROM favorites 
 WHERE id = $1;
+
+-- name: DeleteFavoriteByProductID :execrows
+DELETE FROM favorites
+WHERE product_id = $1;

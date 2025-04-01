@@ -57,6 +57,19 @@ func (q *Queries) DeleteFavorite(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteFavoriteByProductID = `-- name: DeleteFavoriteByProductID :execrows
+DELETE FROM favorites
+WHERE product_id = $1
+`
+
+func (q *Queries) DeleteFavoriteByProductID(ctx context.Context, productID int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteFavoriteByProductID, productID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const getFavoriteByID = `-- name: GetFavoriteByID :one
 SELECT id, user_id, product_id, created_at FROM favorites 
 WHERE id = $1 LIMIT 1
