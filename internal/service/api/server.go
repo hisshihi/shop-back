@@ -109,6 +109,7 @@ func (server *Server) setupServer() {
 	adminRoutes.POST("/category", server.createCategory)
 	adminRoutes.GET("/category/list", server.listCategory)
 	adminRoutes.PUT("/category/:id", server.updateCategory)
+	adminRoutes.DELETE("/category/:id", server.deleteCategory)
 
 	server.router = router
 

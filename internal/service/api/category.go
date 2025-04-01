@@ -123,3 +123,23 @@ func (server *Server) updateCategory(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, updateCategory)
 }
+
+func (server *Server) deleteCategory(ctx *gin.Context) {
+	var req getCategoryByIDRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	err := server.store.DeleteCategory(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, nil)
+}
