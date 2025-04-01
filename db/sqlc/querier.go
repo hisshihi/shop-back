@@ -29,6 +29,7 @@ type Querier interface {
 	CreateReview(ctx context.Context, arg CreateReviewParams) (Review, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteCategory(ctx context.Context, id int64) error
+	DeleteFavoritForID(ctx context.Context, arg DeleteFavoritForIDParams) error
 	DeleteFavorite(ctx context.Context, id int64) error
 	DeleteFavoriteByProductID(ctx context.Context, productID int64) (int64, error)
 	DeleteOrder(ctx context.Context, id int64) error

@@ -59,6 +59,21 @@ func (q *Queries) CreateFavorite(ctx context.Context, arg CreateFavoriteParams) 
 	return i, err
 }
 
+const deleteFavoritForID = `-- name: DeleteFavoritForID :exec
+DELETE FROM favorites
+WHERE id = $1 AND user_id = $2
+`
+
+type DeleteFavoritForIDParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) DeleteFavoritForID(ctx context.Context, arg DeleteFavoritForIDParams) error {
+	_, err := q.db.ExecContext(ctx, deleteFavoritForID, arg.ID, arg.UserID)
+	return err
+}
+
 const deleteFavorite = `-- name: DeleteFavorite :exec
 DELETE FROM favorites 
 WHERE id = $1

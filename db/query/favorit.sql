@@ -29,6 +29,10 @@ WHERE user_id = $1;
 DELETE FROM favorites 
 WHERE id = $1;
 
+-- name: DeleteFavoritForID :exec
+DELETE FROM favorites
+WHERE id = $1 AND user_id = $2;
+
 -- name: DeleteFavoriteByProductID :execrows
 DELETE FROM favorites
 WHERE product_id = $1;
