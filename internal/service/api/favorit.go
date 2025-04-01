@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -78,4 +79,39 @@ func (server *Server) listFavorit(ctx *gin.Context) {
 		"favorits":       listFavorit,
 		"favorits_count": countFavorits,
 	})
+}
+
+type getFavoritByID struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) deleteFavorit(ctx *gin.Context) {
+	var req getFavoritByID
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.DeleteFavoritForIDParams{
+		ID:     req.ID,
+		UserID: user.ID,
+	}
+
+	err = server.store.DeleteFavoritForID(ctx, arg)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, nil)
 }
