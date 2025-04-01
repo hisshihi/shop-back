@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -35,6 +36,9 @@ func (server *Server) createFavorit(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	action := fmt.Sprintf("Добавление в избранное. Пользователь ID: %v. Товар ID: %v", user.ID, favorit.ProductID)
+	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusOK, favorit)
 }
@@ -112,6 +116,9 @@ func (server *Server) deleteFavorit(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	action := fmt.Sprintf("Добавление в избранное. Пользователь ID: %v. Товар ID: %v", user.ID, req.ID)
+	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusNoContent, nil)
 }
