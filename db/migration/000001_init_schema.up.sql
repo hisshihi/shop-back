@@ -49,9 +49,9 @@ CREATE TABLE "orders" (
   "id" bigserial PRIMARY KEY,
   "user_id" bigint NOT NULL,
   "total_amount" decimal(10,2) NOT NULL,
-  "status" varchar(50) NOT NULL,
+  "status" order_status,
   "payment_method" varchar(50) NOT NULL,
-  "delivery_status" order_status,
+  "delivery_status" varchar(50),
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
