@@ -21,6 +21,10 @@ OFFSET $3;
 -- name: CountFavorit :one
 SELECT COUNT(*) FROM favorites;
 
+-- name: CountFavoritForUser :one
+SELECT COUNT(*) FROM favorites
+WHERE user_id = $1;
+
 -- name: DeleteFavorite :exec
 DELETE FROM favorites 
 WHERE id = $1;

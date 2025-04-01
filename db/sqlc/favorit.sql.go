@@ -20,6 +20,18 @@ func (q *Queries) CountFavorit(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countFavoritForUser = `-- name: CountFavoritForUser :one
+SELECT COUNT(*) FROM favorites
+WHERE user_id = $1
+`
+
+func (q *Queries) CountFavoritForUser(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countFavoritForUser, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createFavorite = `-- name: CreateFavorite :one
 INSERT INTO favorites (
   user_id, 
