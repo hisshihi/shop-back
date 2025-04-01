@@ -160,6 +160,7 @@ type Product struct {
 	Price string `json:"price"`
 	// Количество на складе
 	Stock     int32     `json:"stock"`
+	PhotoUrl  []byte    `json:"photo_url"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

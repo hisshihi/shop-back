@@ -4,9 +4,10 @@ INSERT INTO products (
   name, 
   description, 
   price, 
-  stock
+  stock,
+  photo_url
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING *;
 
@@ -31,6 +32,7 @@ SET
   description = $4,
   price = $5,
   stock = $6,
+  photo_url = $7,
   updated_at = NOW()
 WHERE id = $1
 RETURNING *;

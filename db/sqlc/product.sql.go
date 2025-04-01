@@ -26,11 +26,12 @@ INSERT INTO products (
   name, 
   description, 
   price, 
-  stock
+  stock,
+  photo_url
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6
 )
-RETURNING id, category_id, name, description, price, stock, created_at, updated_at
+RETURNING id, category_id, name, description, price, stock, photo_url, created_at, updated_at
 `
 
 type CreateProductParams struct {
@@ -39,6 +40,7 @@ type CreateProductParams struct {
 	Description string `json:"description"`
 	Price       string `json:"price"`
 	Stock       int32  `json:"stock"`
+	PhotoUrl    []byte `json:"photo_url"`
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
@@ -48,6 +50,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		arg.Description,
 		arg.Price,
 		arg.Stock,
+		arg.PhotoUrl,
 	)
 	var i Product
 	err := row.Scan(
@@ -57,6 +60,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.Description,
 		&i.Price,
 		&i.Stock,
+		&i.PhotoUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -74,7 +78,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int64) error {
 }
 
 const getProductByID = `-- name: GetProductByID :one
-SELECT id, category_id, name, description, price, stock, created_at, updated_at FROM products 
+SELECT id, category_id, name, description, price, stock, photo_url, created_at, updated_at FROM products 
 WHERE id = $1 LIMIT 1
 `
 
@@ -88,6 +92,7 @@ func (q *Queries) GetProductByID(ctx context.Context, id int64) (Product, error)
 		&i.Description,
 		&i.Price,
 		&i.Stock,
+		&i.PhotoUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -95,7 +100,7 @@ func (q *Queries) GetProductByID(ctx context.Context, id int64) (Product, error)
 }
 
 const listProducts = `-- name: ListProducts :many
-SELECT id, category_id, name, description, price, stock, created_at, updated_at FROM products 
+SELECT id, category_id, name, description, price, stock, photo_url, created_at, updated_at FROM products 
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -122,6 +127,7 @@ func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]P
 			&i.Description,
 			&i.Price,
 			&i.Stock,
+			&i.PhotoUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -146,9 +152,10 @@ SET
   description = $4,
   price = $5,
   stock = $6,
+  photo_url = $7,
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, category_id, name, description, price, stock, created_at, updated_at
+RETURNING id, category_id, name, description, price, stock, photo_url, created_at, updated_at
 `
 
 type UpdateProductParams struct {
@@ -158,6 +165,7 @@ type UpdateProductParams struct {
 	Description string `json:"description"`
 	Price       string `json:"price"`
 	Stock       int32  `json:"stock"`
+	PhotoUrl    []byte `json:"photo_url"`
 }
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error) {
@@ -168,6 +176,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		arg.Description,
 		arg.Price,
 		arg.Stock,
+		arg.PhotoUrl,
 	)
 	var i Product
 	err := row.Scan(
@@ -177,6 +186,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.Description,
 		&i.Price,
 		&i.Stock,
+		&i.PhotoUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
