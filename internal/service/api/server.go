@@ -99,6 +99,8 @@ func (server *Server) setupServer() {
 	authRouts.Use(server.authMiddleware())
 	authRouts.GET("/users", server.getUserByID)
 	authRouts.PUT("/users", server.updateUser)
+	authRouts.POST("/favorit", server.createFavorit)
+	authRouts.GET("/favorit/list", server.listFavorit)
 
 	// Маршруты доступные администратору
 	adminRoutes := apiGroup.Group("/admin")
