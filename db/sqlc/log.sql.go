@@ -10,6 +10,17 @@ import (
 	"database/sql"
 )
 
+const countLogs = `-- name: CountLogs :one
+SELECT COUNT(*) FROM logs
+`
+
+func (q *Queries) CountLogs(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countLogs)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createLog = `-- name: CreateLog :one
 INSERT INTO logs (
   user_id, 

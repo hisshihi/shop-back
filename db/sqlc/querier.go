@@ -13,6 +13,7 @@ type Querier interface {
 	CountCategory(ctx context.Context) (int64, error)
 	CountFavorit(ctx context.Context) (int64, error)
 	CountFavoritForUser(ctx context.Context, userID int64) (int64, error)
+	CountLogs(ctx context.Context) (int64, error)
 	CountOrders(ctx context.Context) (int64, error)
 	CountProducts(ctx context.Context) (int64, error)
 	CountPromotions(ctx context.Context) (int64, error)

@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -44,6 +45,15 @@ func (server *Server) createCategory(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	action := fmt.Sprintf("Создание категории ID: %v, название %v", category.ID, category.Name)
+	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusOK, category)
 }
@@ -121,6 +131,15 @@ func (server *Server) updateCategory(ctx *gin.Context) {
 		return
 	}
 
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	action := fmt.Sprintf("Обновлениe категории ID: %v, название %v", updateCategory.ID, updateCategory.Name)
+	server.createLog(ctx, user.ID, action)
+
 	ctx.JSON(http.StatusOK, updateCategory)
 }
 
@@ -140,6 +159,15 @@ func (server *Server) deleteCategory(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	action := fmt.Sprintf("Удаление категории ID: %v", req.ID)
+	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusNoContent, nil)
 }

@@ -16,3 +16,6 @@ SELECT * FROM logs
 ORDER BY created_at DESC
 LIMIT $1
 OFFSET $2;
+
+-- name: CountLogs :one
+SELECT COUNT(*) FROM logs;
