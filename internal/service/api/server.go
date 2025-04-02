@@ -104,6 +104,7 @@ func (server *Server) setupServer() {
 	authRoutes.DELETE("/favorit/:id", server.deleteFavorit)
 	authRoutes.POST("/order", server.createOrder)
 	authRoutes.GET("/order/:id", server.getOrderByID)
+	authRoutes.GET("/order/list", server.listOrdersFromUser)
 
 	// Маршруты доступные администратору
 	adminRoutes := apiGroup.Group("/admin")
@@ -121,6 +122,8 @@ func (server *Server) setupServer() {
 	adminRoutes.PUT("/product/:id", server.updateProduct)
 	adminRoutes.DELETE("/product/:id", server.deleteProduct)
 	adminRoutes.GET("/logs", server.listLog)
+	adminRoutes.GET("/order/list", server.listOrders)
+	adminRoutes.PUT("/order/:id", server.updateOrderStatus)
 
 	server.router = router
 

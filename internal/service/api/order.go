@@ -29,7 +29,7 @@ func (server *Server) createOrder(ctx *gin.Context) {
 	arg := sqlc.CreateOrderParams{
 		UserID:        user.ID,
 		TotalAmount:   req.TotalAmount,
-		Status:        string(sqlc.OrderStatusCreated),
+		Status:        sqlc.NullOrderStatus{OrderStatus: sqlc.OrderStatusCreated, Valid: true},
 		PaymentMethod: req.PaymentMethod,
 	}
 
@@ -64,4 +64,124 @@ func (server *Server) getOrderByID(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, order)
+}
+
+type listOrderByUserIDRequest struct {
+	PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+}
+
+func (server *Server) listOrdersFromUser(ctx *gin.Context) {
+	var req listOrderByUserIDRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.ListOrdersByUserIDParams{
+		UserID: user.ID,
+		Limit:  int64(req.PageSize),
+		Offset: int64((req.PageID - 1) * req.PageSize),
+	}
+
+	listOrders, err := server.store.ListOrdersByUserID(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	countOrders, err := server.store.CountOrderByUserID(ctx, user.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"orders":       listOrders,
+		"count_orders": countOrders,
+	})
+}
+
+type listOrderRequest struct {
+	PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+}
+
+func (server *Server) listOrders(ctx *gin.Context) {
+	var req listOrderRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.ListOrdersParams{
+		Limit:  int64(req.PageSize),
+		Offset: int64((req.PageID - 1) * req.PageSize),
+	}
+
+	listOrders, err := server.store.ListOrders(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	countOrders, err := server.store.CountOrderByUserID(ctx, user.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"orders":       listOrders,
+		"count_orders": countOrders,
+	})
+}
+
+type updateOrderStatusRequest struct {
+	Status sqlc.OrderStatus `json:"status" binding:"required"`
+}
+
+func (server *Server) updateOrderStatus(ctx *gin.Context) {
+	var req updateOrderStatusRequest
+	var reqID getOrderByIDRequest
+
+	if err := ctx.ShouldBindUri(&reqID); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.UpdateOrderStatusParams{
+		ID:             reqID.ID,
+		Status:         sqlc.NullOrderStatus{OrderStatus: req.Status, Valid: true},
+		DeliveryStatus: sql.NullString{},
+	}
+
+	updateOrder, err := server.store.UpdateOrderStatus(ctx, arg)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updateOrder)
 }
