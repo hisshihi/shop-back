@@ -139,3 +139,47 @@ func (store *Store) TransferTxDeleteCategory(ctx context.Context, arg DeleteCate
 
 	return result, err
 }
+
+type OrderItemTxRequest struct {
+	ProductID int64  `json:"product_id" binding:"required,min=1"`
+	Quantity  int32  `json:"quantity" binding:"required,min=1"`
+	Price     string `json:"price" binding:"required"`
+}
+
+// Транзакия для создания заказа и товаров в заказе
+func (store *Store) CreateOrderTx(ctx context.Context, arg sqlc.CreateOrderParams, items []OrderItemTxRequest) (sqlc.Order, error) {
+	var order sqlc.Order
+
+	err := store.execTx(ctx, func(q *sqlc.Queries) error {
+		// Создание заказа
+		createOrder, err := q.CreateOrder(ctx, arg)
+		if err != nil {
+			return err
+		}
+
+		order = createOrder
+
+		// Добавляем товары
+		for _, item := range items {
+			// Проверка, существует ли заказ
+			_, err := q.GetProductByID(ctx, item.ProductID)
+			if err != nil {
+				return fmt.Errorf("товар не существует %w", err)
+			}
+
+			// Создание позиций заказка
+			_, err = q.CreateOrderItem(ctx, sqlc.CreateOrderItemParams{
+				OrderID:   order.ID,
+				ProductID: item.ProductID,
+				Quantity:  item.Quantity,
+				Price:     item.Price,
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	return order, err
+}

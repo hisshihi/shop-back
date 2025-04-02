@@ -11,8 +11,9 @@ import (
 )
 
 type createOrderRequest struct {
-	TotalAmount   string `json:"total_amount" binding:"required"`
-	PaymentMethod string `json:"payment_method" binding:"required"`
+	TotalAmount   string                       `json:"total_amount" binding:"required"`
+	PaymentMethod string                       `json:"payment_method" binding:"required"`
+	Items         []service.OrderItemTxRequest `json:"items" binding:"required,min=1"`
 }
 
 func (server *Server) createOrder(ctx *gin.Context) {
@@ -35,13 +36,13 @@ func (server *Server) createOrder(ctx *gin.Context) {
 		PaymentMethod: req.PaymentMethod,
 	}
 
-	order, err := server.store.CreateOrder(ctx, arg)
+	order, err := server.store.CreateOrderTx(ctx, arg, req.Items)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	action := fmt.Sprintf("Создание заказа ID: %v", order.ID)
+	action := fmt.Sprintf("Создание заказа ID: %v с позициами %d", order.ID, len(req.Items))
 	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusOK, order)
