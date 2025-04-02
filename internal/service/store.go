@@ -72,3 +72,36 @@ func (store *Store) TransferTxDeleteProduct(ctx context.Context, arg DeleteProdu
 	return result, err
 }
 
+type DeleteOrderTxParams struct {
+	OrderID int64
+}
+
+type DeleteOrderTxResult struct {
+	DeleteOrderOrderItem int64
+	DeleteOrder          bool
+}
+
+func (store *Store) TransferTxDeleteOrder(ctx context.Context, arg DeleteOrderTxParams) (DeleteOrderTxResult, error) {
+	var result DeleteOrderTxResult
+
+	err := store.execTx(ctx, func(q *sqlc.Queries) error {
+		var err error
+
+		deleteOrderItem, err := q.DeleteOrderItemByOrderID(ctx, arg.OrderID)
+		if err != nil {
+			return fmt.Errorf("ошибка при удалении избранного %w", err)
+		}
+		result.DeleteOrderOrderItem = deleteOrderItem
+
+		err = q.DeleteOrder(ctx, arg.OrderID)
+		if err != nil {
+			return fmt.Errorf("ошибка при удалении товара %w", err)
+		}
+
+		result.DeleteOrder = true
+
+		return nil
+	})
+
+	return result, err
+}

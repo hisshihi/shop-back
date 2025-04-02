@@ -2,10 +2,12 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hisshihi/shop-back/db/sqlc"
+	"github.com/hisshihi/shop-back/internal/service"
 )
 
 type createOrderRequest struct {
@@ -38,6 +40,9 @@ func (server *Server) createOrder(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	action := fmt.Sprintf("Создание заказа ID: %v", order.ID)
+	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusOK, order)
 }
@@ -183,5 +188,48 @@ func (server *Server) updateOrderStatus(ctx *gin.Context) {
 		return
 	}
 
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	action := fmt.Sprintf("Обновление заказа ID: %v", updateOrder.ID)
+	server.createLog(ctx, user.ID, action)
+
 	ctx.JSON(http.StatusOK, updateOrder)
+}
+
+func (server *Server) deleteOrder(ctx *gin.Context) {
+	var req getOrderByIDRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := service.DeleteOrderTxParams{
+		OrderID: req.ID,
+	}
+
+	result, err := server.store.TransferTxDeleteOrder(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if !result.DeleteOrder {
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	action := fmt.Sprintf("Удаление заказа ID: %v", req.ID)
+	server.createLog(ctx, user.ID, action)
+
+	ctx.JSON(http.StatusNoContent, nil)
 }

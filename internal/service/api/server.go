@@ -124,6 +124,7 @@ func (server *Server) setupServer() {
 	adminRoutes.GET("/logs", server.listLog)
 	adminRoutes.GET("/order/list", server.listOrders)
 	adminRoutes.PUT("/order/:id", server.updateOrderStatus)
+	adminRoutes.DELETE("/order/:id", server.deleteOrder)
 
 	server.router = router
 
