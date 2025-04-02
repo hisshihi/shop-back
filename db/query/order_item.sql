@@ -30,3 +30,7 @@ RETURNING *;
 -- name: DeleteOrderItem :exec
 DELETE FROM order_items 
 WHERE id = $1;
+
+-- name: DeleteOrderItemByOrderID :execrows
+DELETE FROM order_items
+WHERE order_id = $1;
