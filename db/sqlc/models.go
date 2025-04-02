@@ -129,13 +129,13 @@ type Order struct {
 	// Общая сумма заказа
 	TotalAmount string `json:"total_amount"`
 	// pending, processed, delivered, canceled
-	Status string `json:"status"`
+	Status NullOrderStatus `json:"status"`
 	// Способ оплаты: card, cash
 	PaymentMethod string `json:"payment_method"`
 	// Статус доставки, может быть пустым
-	DeliveryStatus NullOrderStatus `json:"delivery_status"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
+	DeliveryStatus sql.NullString `json:"delivery_status"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
 }
 
 type OrderItem struct {

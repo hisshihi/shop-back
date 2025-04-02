@@ -7,7 +7,20 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 )
+
+const countOrderByUserID = `-- name: CountOrderByUserID :one
+SELECT COUNT(*) FROM orders
+WHERE user_id = $1
+`
+
+func (q *Queries) CountOrderByUserID(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countOrderByUserID, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
 
 const countOrders = `-- name: CountOrders :one
 SELECT COUNT(*) FROM orders
@@ -36,9 +49,9 @@ RETURNING id, user_id, total_amount, status, payment_method, delivery_status, cr
 type CreateOrderParams struct {
 	UserID         int64           `json:"user_id"`
 	TotalAmount    string          `json:"total_amount"`
-	Status         string          `json:"status"`
+	Status         NullOrderStatus `json:"status"`
 	PaymentMethod  string          `json:"payment_method"`
-	DeliveryStatus NullOrderStatus `json:"delivery_status"`
+	DeliveryStatus sql.NullString  `json:"delivery_status"`
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
@@ -96,7 +109,7 @@ func (q *Queries) GetOrderByID(ctx context.Context, id int64) (Order, error) {
 
 const listOrders = `-- name: ListOrders :many
 SELECT id, user_id, total_amount, status, payment_method, delivery_status, created_at, updated_at FROM orders 
-ORDER BY id
+ORDER BY created_at
 LIMIT $1
 OFFSET $2
 `
@@ -108,6 +121,52 @@ type ListOrdersParams struct {
 
 func (q *Queries) ListOrders(ctx context.Context, arg ListOrdersParams) ([]Order, error) {
 	rows, err := q.db.QueryContext(ctx, listOrders, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Order{}
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.TotalAmount,
+			&i.Status,
+			&i.PaymentMethod,
+			&i.DeliveryStatus,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listOrdersByUserID = `-- name: ListOrdersByUserID :many
+SELECT id, user_id, total_amount, status, payment_method, delivery_status, created_at, updated_at FROM orders
+WHERE user_id = $1
+ORDER BY created_at
+LIMIT $2
+OFFSET $3
+`
+
+type ListOrdersByUserIDParams struct {
+	UserID int64 `json:"user_id"`
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
+}
+
+func (q *Queries) ListOrdersByUserID(ctx context.Context, arg ListOrdersByUserIDParams) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, listOrdersByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -150,8 +209,8 @@ RETURNING id, user_id, total_amount, status, payment_method, delivery_status, cr
 
 type UpdateOrderStatusParams struct {
 	ID             int64           `json:"id"`
-	Status         string          `json:"status"`
-	DeliveryStatus NullOrderStatus `json:"delivery_status"`
+	Status         NullOrderStatus `json:"status"`
+	DeliveryStatus sql.NullString  `json:"delivery_status"`
 }
 
 func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error) {
