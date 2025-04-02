@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hisshihi/shop-back/db/sqlc"
+	"github.com/hisshihi/shop-back/internal/service"
 	"github.com/lib/pq"
 )
 
@@ -143,7 +144,7 @@ func (server *Server) updateCategory(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, updateCategory)
 }
 
-// Добавить транзакцию для удаления категории
+// TODO: Добавить транзакцию для удаления категории
 func (server *Server) deleteCategory(ctx *gin.Context) {
 	var req getCategoryByIDRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -151,12 +152,10 @@ func (server *Server) deleteCategory(ctx *gin.Context) {
 		return
 	}
 
-	err := server.store.DeleteCategory(ctx, req.ID)
+	result, err := server.store.TransferTxDeleteCategory(ctx, service.DeleteCategoryTxParams{
+		Category: req.ID,
+	})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -170,5 +169,8 @@ func (server *Server) deleteCategory(ctx *gin.Context) {
 	action := fmt.Sprintf("Удаление категории ID: %v", req.ID)
 	server.createLog(ctx, user.ID, action)
 
-	ctx.JSON(http.StatusNoContent, nil)
+	ctx.JSON(http.StatusNoContent, gin.H{
+		"deleted_products": result.DeleteProducts,
+		"delted_favorits":  result.DeleteFavotits,
+	})
 }

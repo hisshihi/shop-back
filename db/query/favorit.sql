@@ -36,3 +36,7 @@ WHERE id = $1 AND user_id = $2;
 -- name: DeleteFavoriteByProductID :execrows
 DELETE FROM favorites
 WHERE product_id = $1;
+
+-- name: DeleteFavoritesByCategoryID :execrows
+DELETE FROM favorites
+WHERE product_id IN (SELECT id FROM products WHERE category_id = $1);

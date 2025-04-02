@@ -276,10 +276,7 @@ func (server *Server) deleteProduct(ctx *gin.Context) {
 		return
 	}
 
-	if !result.DeleteProduct {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Товар не найден"})
-		return
-	}
-
-	ctx.JSON(http.StatusNoContent, nil)
+	ctx.JSON(http.StatusNoContent, gin.H{
+		"deleted_products": result.DeleteFavorits,
+	})
 }

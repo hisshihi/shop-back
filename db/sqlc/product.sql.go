@@ -77,6 +77,47 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteProductByCategoryID = `-- name: DeleteProductByCategoryID :execrows
+DELETE FROM products
+WHERE category_id = $1
+`
+
+func (q *Queries) DeleteProductByCategoryID(ctx context.Context, categoryID int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteProductByCategoryID, categoryID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const getProductByCategoryID = `-- name: GetProductByCategoryID :many
+SELECT id FROM products
+WHERE category_id = $1
+`
+
+func (q *Queries) GetProductByCategoryID(ctx context.Context, categoryID int64) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, getProductByCategoryID, categoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int64{}
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProductByID = `-- name: GetProductByID :one
 SELECT id, category_id, name, description, price, stock, photo_url, created_at, updated_at FROM products 
 WHERE id = $1 LIMIT 1

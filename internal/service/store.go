@@ -43,8 +43,7 @@ type DeleteProductTxParams struct {
 }
 
 type DeleteProductTxResult struct {
-	DeleteFavorit int64
-	DeleteProduct bool
+	DeleteFavorits int64
 }
 
 func (store *Store) TransferTxDeleteProduct(ctx context.Context, arg DeleteProductTxParams) (DeleteProductTxResult, error) {
@@ -57,14 +56,12 @@ func (store *Store) TransferTxDeleteProduct(ctx context.Context, arg DeleteProdu
 		if err != nil {
 			return fmt.Errorf("ошибка при удалении избранного %w", err)
 		}
-		result.DeleteFavorit = deleteFavorite
+		result.DeleteFavorits = deleteFavorite
 
 		err = q.DeleteProduct(ctx, arg.ProductID)
 		if err != nil {
 			return fmt.Errorf("ошибка при удалении товара %w", err)
 		}
-
-		result.DeleteProduct = true
 
 		return nil
 	})
@@ -89,16 +86,53 @@ func (store *Store) TransferTxDeleteOrder(ctx context.Context, arg DeleteOrderTx
 
 		deleteOrderItem, err := q.DeleteOrderItemByOrderID(ctx, arg.OrderID)
 		if err != nil {
-			return fmt.Errorf("ошибка при удалении избранного %w", err)
+			return fmt.Errorf("ошибка при твоаров заказа %w", err)
 		}
 		result.DeleteOrderOrderItem = deleteOrderItem
 
 		err = q.DeleteOrder(ctx, arg.OrderID)
 		if err != nil {
-			return fmt.Errorf("ошибка при удалении товара %w", err)
+			return fmt.Errorf("ошибка при удалении заказа %w", err)
 		}
 
 		result.DeleteOrder = true
+
+		return nil
+	})
+
+	return result, err
+}
+
+type DeleteCategoryTxParams struct {
+	Category int64
+}
+
+type DeleteCategoryTxResult struct {
+	DeleteProducts int64
+	DeleteFavotits int64
+}
+
+func (store *Store) TransferTxDeleteCategory(ctx context.Context, arg DeleteCategoryTxParams) (DeleteCategoryTxResult, error) {
+	var result DeleteCategoryTxResult
+	err := store.execTx(ctx, func(q *sqlc.Queries) error {
+		var err error
+
+		favoritesCount, err := q.DeleteFavoritesByCategoryID(ctx, arg.Category)
+		if err != nil {
+			return fmt.Errorf("ошибка удаления избранного %w", err)
+		}
+		result.DeleteFavotits = favoritesCount
+
+		productsCount, err := q.DeleteProductByCategoryID(ctx, arg.Category)
+		if err != nil {
+			fmt.Errorf("ошибка удаления товара %w", err)
+		}
+		result.DeleteProducts = productsCount
+
+		err = q.DeleteCategory(ctx, arg.Category)
+		if err != nil {
+			fmt.Errorf("ошибка удаления категории %w", err)
+		}
 
 		return nil
 	})

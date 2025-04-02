@@ -34,10 +34,12 @@ type Querier interface {
 	DeleteFavoritForID(ctx context.Context, arg DeleteFavoritForIDParams) error
 	DeleteFavorite(ctx context.Context, id int64) error
 	DeleteFavoriteByProductID(ctx context.Context, productID int64) (int64, error)
+	DeleteFavoritesByCategoryID(ctx context.Context, categoryID int64) (int64, error)
 	DeleteOrder(ctx context.Context, id int64) error
 	DeleteOrderItem(ctx context.Context, id int64) error
 	DeleteOrderItemByOrderID(ctx context.Context, orderID int64) (int64, error)
 	DeleteProduct(ctx context.Context, id int64) error
+	DeleteProductByCategoryID(ctx context.Context, categoryID int64) (int64, error)
 	DeleteProductPromotion(ctx context.Context, id int64) error
 	DeletePromotion(ctx context.Context, id int64) error
 	DeleteReview(ctx context.Context, id int64) error
@@ -47,6 +49,7 @@ type Querier interface {
 	GetLogByID(ctx context.Context, id int64) (Log, error)
 	GetOrderByID(ctx context.Context, id int64) (Order, error)
 	GetOrderItemByID(ctx context.Context, id int64) (OrderItem, error)
+	GetProductByCategoryID(ctx context.Context, categoryID int64) ([]int64, error)
 	GetProductByID(ctx context.Context, id int64) (Product, error)
 	GetProductPromotionByID(ctx context.Context, id int64) (ProductPromotion, error)
 	GetPromotionByID(ctx context.Context, id int64) (Promotion, error)

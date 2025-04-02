@@ -15,6 +15,10 @@ RETURNING *;
 SELECT * FROM products 
 WHERE id = $1 LIMIT 1;
 
+-- name: GetProductByCategoryID :many
+SELECT id FROM products
+WHERE category_id = $1;
+
 -- name: ListProducts :many
 SELECT * FROM products 
 ORDER BY id
@@ -40,3 +44,7 @@ RETURNING *;
 -- name: DeleteProduct :exec
 DELETE FROM products 
 WHERE id = $1;
+
+-- name: DeleteProductByCategoryID :execrows
+DELETE FROM products
+WHERE category_id = $1;
