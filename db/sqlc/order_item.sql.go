@@ -58,6 +58,19 @@ func (q *Queries) DeleteOrderItem(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteOrderItemByOrderID = `-- name: DeleteOrderItemByOrderID :execrows
+DELETE FROM order_items
+WHERE order_id = $1
+`
+
+func (q *Queries) DeleteOrderItemByOrderID(ctx context.Context, orderID int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteOrderItemByOrderID, orderID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const getOrderItemByID = `-- name: GetOrderItemByID :one
 SELECT id, order_id, product_id, quantity, price, created_at, updated_at FROM order_items 
 WHERE id = $1 LIMIT 1

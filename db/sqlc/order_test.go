@@ -16,9 +16,9 @@ func createRandomOrder(t *testing.T) Order {
 	arg := CreateOrderParams{
 		UserID:         user.ID,
 		TotalAmount:    fmt.Sprintf("%.2f", gofakeit.Price(50, 500)),
-		Status:         "pending",
+		Status:         NullOrderStatus{OrderStatus: OrderStatusCreated, Valid: true},
 		PaymentMethod:  "card",
-		DeliveryStatus: NullOrderStatus{OrderStatus: OrderStatusProcessed, Valid: true},
+		DeliveryStatus: sql.NullString{},
 	}
 
 	order, err := testQueries.CreateOrder(context.Background(), arg)
@@ -91,8 +91,8 @@ func TestUpdateOrderStatus(t *testing.T) {
 	order1 := createRandomOrder(t)
 	arg := UpdateOrderStatusParams{
 		ID:             order1.ID,
-		Status:         string(OrderStatusCanceled),
-		DeliveryStatus: NullOrderStatus{OrderStatus: OrderStatusDelivered, Valid: true},
+		Status:         NullOrderStatus{OrderStatus: OrderStatusDelivered, Valid: true},
+		DeliveryStatus: sql.NullString{},
 	}
 
 	order2, err := testQueries.UpdateOrderStatus(context.Background(), arg)
@@ -116,4 +116,3 @@ func TestDeleteOrder(t *testing.T) {
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, order2)
 }
-

@@ -36,6 +36,7 @@ type Querier interface {
 	DeleteFavoriteByProductID(ctx context.Context, productID int64) (int64, error)
 	DeleteOrder(ctx context.Context, id int64) error
 	DeleteOrderItem(ctx context.Context, id int64) error
+	DeleteOrderItemByOrderID(ctx context.Context, orderID int64) (int64, error)
 	DeleteProduct(ctx context.Context, id int64) error
 	DeleteProductPromotion(ctx context.Context, id int64) error
 	DeletePromotion(ctx context.Context, id int64) error
