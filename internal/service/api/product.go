@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -109,6 +110,15 @@ func (server *Server) createProduct(ctx *gin.Context) {
 		PhotoUrl:    base64.StdEncoding.EncodeToString(product.PhotoUrl),
 		PhotoMime:   contentType,
 	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	action := fmt.Sprintf("Создание товара ID: %v", rsp.ID)
+	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusOK, rsp)
 }
@@ -257,6 +267,15 @@ func (server *Server) updateProduct(ctx *gin.Context) {
 		return
 	}
 
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	action := fmt.Sprintf("Обновление товара ID: %v", updateProduct.ID)
+	server.createLog(ctx, user.ID, action)
+
 	ctx.JSON(http.StatusOK, updateProduct)
 }
 
@@ -275,6 +294,15 @@ func (server *Server) deleteProduct(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	action := fmt.Sprintf("Удаление товара ID: %v", req.ID)
+	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusNoContent, gin.H{
 		"deleted_products": result.DeleteFavorits,
