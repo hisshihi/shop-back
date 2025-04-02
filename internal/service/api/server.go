@@ -95,14 +95,15 @@ func (server *Server) setupServer() {
 	apiGroup.GET("/product/list", server.listProduct)
 
 	// Маршруты доступные всем авторизированным пользователям
-	authRouts := apiGroup.Group("/")
-	authRouts.Use(server.authMiddleware())
-	authRouts.GET("/users", server.getUserByID)
-	authRouts.PUT("/users", server.updateUser)
-	authRouts.POST("/favorit", server.createFavorit)
-	authRouts.GET("/favorit/list", server.listFavorit)
-	authRouts.DELETE("/favorit/:id", server.deleteFavorit)
-	authRouts.POST("/order", server.createOrder)
+	authRoutes := apiGroup.Group("/")
+	authRoutes.Use(server.authMiddleware())
+	authRoutes.GET("/users", server.getUserByID)
+	authRoutes.PUT("/users", server.updateUser)
+	authRoutes.POST("/favorit", server.createFavorit)
+	authRoutes.GET("/favorit/list", server.listFavorit)
+	authRoutes.DELETE("/favorit/:id", server.deleteFavorit)
+	authRoutes.POST("/order", server.createOrder)
+	authRoutes.GET("/order/:id", server.getOrderByID)
 
 	// Маршруты доступные администратору
 	adminRoutes := apiGroup.Group("/admin")
