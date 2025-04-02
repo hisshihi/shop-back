@@ -35,3 +35,8 @@ RETURNING *;
 -- name: DeleteReview :exec
 DELETE FROM reviews 
 WHERE id = $1;
+
+-- name: GetReviewByUserAndProduct :one
+SELECT * FROM reviews
+WHERE user_id = $1 AND product_id = $2
+LIMIT 1;

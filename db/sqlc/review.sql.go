@@ -90,6 +90,32 @@ func (q *Queries) GetReviewByID(ctx context.Context, id int64) (Review, error) {
 	return i, err
 }
 
+const getReviewByUserAndProduct = `-- name: GetReviewByUserAndProduct :one
+SELECT id, user_id, product_id, rating, comment, created_at, updated_at FROM reviews
+WHERE user_id = $1 AND product_id = $2
+LIMIT 1
+`
+
+type GetReviewByUserAndProductParams struct {
+	UserID    int64 `json:"user_id"`
+	ProductID int64 `json:"product_id"`
+}
+
+func (q *Queries) GetReviewByUserAndProduct(ctx context.Context, arg GetReviewByUserAndProductParams) (Review, error) {
+	row := q.db.QueryRowContext(ctx, getReviewByUserAndProduct, arg.UserID, arg.ProductID)
+	var i Review
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ProductID,
+		&i.Rating,
+		&i.Comment,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listReviews = `-- name: ListReviews :many
 SELECT id, user_id, product_id, rating, comment, created_at, updated_at FROM reviews 
 WHERE product_id = $1

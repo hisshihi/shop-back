@@ -199,3 +199,5 @@ ALTER TABLE "products" ADD CONSTRAINT "product_categories" FOREIGN KEY ("categor
 ALTER TABLE "product_promotions" ADD CONSTRAINT "product_promotions_products" FOREIGN KEY ("product_id") REFERENCES "products" ("id");
 
 ALTER TABLE "product_promotions" ADD CONSTRAINT "product_promotions_promotions" FOREIGN KEY ("promotion_id") REFERENCES "promotions" ("id");
+
+ALTER TABLE reviews ADD CONSTRAINT unique_user_product_review UNIQUE (user_id, product_id);

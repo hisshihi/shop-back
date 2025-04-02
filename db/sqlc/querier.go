@@ -55,6 +55,7 @@ type Querier interface {
 	GetProductPromotionByID(ctx context.Context, id int64) (ProductPromotion, error)
 	GetPromotionByID(ctx context.Context, id int64) (Promotion, error)
 	GetReviewByID(ctx context.Context, id int64) (Review, error)
+	GetReviewByUserAndProduct(ctx context.Context, arg GetReviewByUserAndProductParams) (Review, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	ListCategories(ctx context.Context, arg ListCategoriesParams) ([]Category, error)
