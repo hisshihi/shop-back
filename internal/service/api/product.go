@@ -273,10 +273,12 @@ func (server *Server) deleteProduct(ctx *gin.Context) {
 	result, err := server.store.TransferTxDeleteProduct(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
 	}
 
 	if !result.DeleteProduct {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Товар не найден"})
+		return
 	}
 
 	ctx.JSON(http.StatusNoContent, nil)
