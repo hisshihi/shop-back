@@ -59,7 +59,7 @@ func (server *Server) getOrderByID(ctx *gin.Context) {
 		return
 	}
 
-	order, err := server.store.GetOrderByID(ctx, req.ID)
+	order, err := server.store.GetOrderWithItems(ctx, req.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -90,13 +90,13 @@ func (server *Server) listOrdersFromUser(ctx *gin.Context) {
 		return
 	}
 
-	arg := sqlc.ListOrdersByUserIDParams{
+	arg := sqlc.ListOrdersByUserIDWithItemsParams{
 		UserID: user.ID,
 		Limit:  int64(req.PageSize),
 		Offset: int64((req.PageID - 1) * req.PageSize),
 	}
 
-	listOrders, err := server.store.ListOrdersByUserID(ctx, arg)
+	listOrders, err := server.store.ListOrdersByUserIDWithItems(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -132,12 +132,12 @@ func (server *Server) listOrders(ctx *gin.Context) {
 		return
 	}
 
-	arg := sqlc.ListOrdersParams{
+	arg := sqlc.ListOrdersWithItemsParams{
 		Limit:  int64(req.PageSize),
 		Offset: int64((req.PageID - 1) * req.PageSize),
 	}
 
-	listOrders, err := server.store.ListOrders(ctx, arg)
+	listOrders, err := server.store.ListOrdersWithItems(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -173,13 +173,13 @@ func (server *Server) updateOrderStatus(ctx *gin.Context) {
 		return
 	}
 
-	arg := sqlc.UpdateOrderStatusParams{
-		ID:             reqID.ID,
-		Status:         sqlc.NullOrderStatus{OrderStatus: req.Status, Valid: true},
-		DeliveryStatus: sql.NullString{},
+	arg := sqlc.UpdateOrderStatusWithItemsParams{
+		Column1: sql.NullInt64{Int64: reqID.ID, Valid: true},
+		Column2: sqlc.NullOrderStatus{OrderStatus: req.Status, Valid: true},
+		Column3: sql.NullString{},
 	}
 
-	updateOrder, err := server.store.UpdateOrderStatus(ctx, arg)
+	updateOrder, err := server.store.UpdateOrderStatusWithItems(ctx, arg)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
