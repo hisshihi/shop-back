@@ -19,7 +19,6 @@ func (server *Server) createLog(ctx *gin.Context, userID int64, action string) {
 	_, err := server.store.CreateLog(ctx, arg)
 	if err != nil {
 		fmt.Errorf("Ошибка при создании логов %w", err)
-		return
 	}
 }
 
