@@ -16,12 +16,23 @@ WHERE id = $1 LIMIT 1;
 
 -- name: ListOrders :many
 SELECT * FROM orders 
-ORDER BY id
+ORDER BY created_at
 LIMIT $1
 OFFSET $2;
 
+-- name: ListOrdersByUserID :many
+SELECT * FROM orders
+WHERE user_id = $1
+ORDER BY created_at
+LIMIT $2
+OFFSET $3;
+
 -- name: CountOrders :one
 SELECT COUNT(*) FROM orders;
+
+-- name: CountOrderByUserID :one
+SELECT COUNT(*) FROM orders
+WHERE user_id = $1;
 
 -- name: UpdateOrderStatus :one
 UPDATE orders
