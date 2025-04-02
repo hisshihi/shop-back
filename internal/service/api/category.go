@@ -143,6 +143,7 @@ func (server *Server) updateCategory(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, updateCategory)
 }
 
+// Добавить транзакцию для удаления категории
 func (server *Server) deleteCategory(ctx *gin.Context) {
 	var req getCategoryByIDRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
