@@ -33,7 +33,28 @@ func createRandomReview(t *testing.T) Review {
 
 	return review
 }
+func createReviewByProductID(t *testing.T, productID int64) Review {
+	user := createRandomUser(t)
+	arg := CreateReviewParams{
+		UserID:    user.ID,
+		ProductID: productID,
+		Rating:    int32(gofakeit.Number(1, 5)),
+		Comment:   sql.NullString{String: gofakeit.Sentence(10), Valid: true},
+	}
 
+	review, err := testQueries.CreateReview(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, review)
+
+	require.Equal(t, arg.UserID, review.UserID)
+	require.Equal(t, arg.ProductID, review.ProductID)
+	require.Equal(t, arg.Rating, review.Rating)
+	require.Equal(t, arg.Comment, review.Comment)
+	require.NotZero(t, review.ID)
+	require.NotZero(t, review.CreatedAt)
+
+	return review
+}
 func TestCreateReview(t *testing.T) {
 	createRandomReview(t)
 }
@@ -81,14 +102,15 @@ func TestListReviews(t *testing.T) {
 }
 
 func TestCountReviews(t *testing.T) {
-	initialCount, err := testQueries.CountReviews(context.Background())
+	product := createRandomProduct(t)
+	initialCount, err := testQueries.CountReviews(context.Background(), product.ID)
 	require.NoError(t, err)
 
 	for range 10 {
-		createRandomReview(t)
+		createReviewByProductID(t, product.ID)
 	}
 
-	finalCount, err := testQueries.CountReviews(context.Background())
+	finalCount, err := testQueries.CountReviews(context.Background(), product.ID)
 	require.NoError(t, err)
 	require.Equal(t, initialCount+10, finalCount)
 }

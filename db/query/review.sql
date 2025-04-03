@@ -13,6 +13,13 @@ RETURNING *;
 SELECT * FROM reviews 
 WHERE id = $1 LIMIT 1;
 
+-- name: GetReviewByProductID :many
+SELECT * FROM reviews
+WHERE product_id = $1
+ORDER BY created_at
+LIMIT $2
+OFFSET $3;
+
 -- name: ListReviews :many
 SELECT * FROM reviews 
 WHERE product_id = $1
@@ -21,7 +28,8 @@ LIMIT $2
 OFFSET $3;
 
 -- name: CountReviews :one
-SELECT COUNT(*) FROM reviews;
+SELECT COUNT(*) FROM reviews
+WHERE product_id = $1;
 
 -- name: UpdateReview :one
 UPDATE reviews
@@ -40,3 +48,9 @@ WHERE id = $1;
 SELECT * FROM reviews
 WHERE user_id = $1 AND product_id = $2
 LIMIT 1;
+
+-- name: GetAverageRatingForProvider :one
+SELECT COALESCE(AVG(rating), 0) as avearage_rating,
+COUNT(*) as total_reviews
+  FROM reviews
+WHERE product_id = $1;

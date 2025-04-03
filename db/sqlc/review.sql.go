@@ -12,10 +12,11 @@ import (
 
 const countReviews = `-- name: CountReviews :one
 SELECT COUNT(*) FROM reviews
+WHERE product_id = $1
 `
 
-func (q *Queries) CountReviews(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countReviews)
+func (q *Queries) CountReviews(ctx context.Context, productID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countReviews, productID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -70,6 +71,25 @@ func (q *Queries) DeleteReview(ctx context.Context, id int64) error {
 	return err
 }
 
+const getAverageRatingForProvider = `-- name: GetAverageRatingForProvider :one
+SELECT COALESCE(AVG(rating), 0) as avearage_rating,
+COUNT(*) as total_reviews
+  FROM reviews
+WHERE product_id = $1
+`
+
+type GetAverageRatingForProviderRow struct {
+	AvearageRating sql.NullString `json:"avearage_rating"`
+	TotalReviews   int64          `json:"total_reviews"`
+}
+
+func (q *Queries) GetAverageRatingForProvider(ctx context.Context, productID int64) (GetAverageRatingForProviderRow, error) {
+	row := q.db.QueryRowContext(ctx, getAverageRatingForProvider, productID)
+	var i GetAverageRatingForProviderRow
+	err := row.Scan(&i.AvearageRating, &i.TotalReviews)
+	return i, err
+}
+
 const getReviewByID = `-- name: GetReviewByID :one
 SELECT id, user_id, product_id, rating, comment, created_at, updated_at FROM reviews 
 WHERE id = $1 LIMIT 1
@@ -88,6 +108,51 @@ func (q *Queries) GetReviewByID(ctx context.Context, id int64) (Review, error) {
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getReviewByProductID = `-- name: GetReviewByProductID :many
+SELECT id, user_id, product_id, rating, comment, created_at, updated_at FROM reviews
+WHERE product_id = $1
+ORDER BY created_at
+LIMIT $2
+OFFSET $3
+`
+
+type GetReviewByProductIDParams struct {
+	ProductID int64 `json:"product_id"`
+	Limit     int64 `json:"limit"`
+	Offset    int64 `json:"offset"`
+}
+
+func (q *Queries) GetReviewByProductID(ctx context.Context, arg GetReviewByProductIDParams) ([]Review, error) {
+	rows, err := q.db.QueryContext(ctx, getReviewByProductID, arg.ProductID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Review{}
+	for rows.Next() {
+		var i Review
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.ProductID,
+			&i.Rating,
+			&i.Comment,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getReviewByUserAndProduct = `-- name: GetReviewByUserAndProduct :one

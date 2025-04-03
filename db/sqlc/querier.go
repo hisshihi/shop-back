@@ -18,7 +18,7 @@ type Querier interface {
 	CountOrders(ctx context.Context) (int64, error)
 	CountProducts(ctx context.Context) (int64, error)
 	CountPromotions(ctx context.Context) (int64, error)
-	CountReviews(ctx context.Context) (int64, error)
+	CountReviews(ctx context.Context, productID int64) (int64, error)
 	CountUsers(ctx context.Context) (int64, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateFavorite(ctx context.Context, arg CreateFavoriteParams) (Favorite, error)
@@ -44,6 +44,7 @@ type Querier interface {
 	DeletePromotion(ctx context.Context, id int64) error
 	DeleteReview(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
+	GetAverageRatingForProvider(ctx context.Context, productID int64) (GetAverageRatingForProviderRow, error)
 	GetCategoryByID(ctx context.Context, id int64) (Category, error)
 	GetFavoriteByID(ctx context.Context, id int64) (Favorite, error)
 	GetLogByID(ctx context.Context, id int64) (Log, error)
@@ -55,6 +56,7 @@ type Querier interface {
 	GetProductPromotionByID(ctx context.Context, id int64) (ProductPromotion, error)
 	GetPromotionByID(ctx context.Context, id int64) (Promotion, error)
 	GetReviewByID(ctx context.Context, id int64) (Review, error)
+	GetReviewByProductID(ctx context.Context, arg GetReviewByProductIDParams) ([]Review, error)
 	GetReviewByUserAndProduct(ctx context.Context, arg GetReviewByUserAndProductParams) (Review, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
