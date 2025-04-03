@@ -178,3 +178,41 @@ func (server *Server) updateReview(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, updateReview)
 
 }
+
+func (server *Server) deleteReview(ctx *gin.Context) {
+	var req getReviewByIDRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	review, err := server.store.GetReviewByID(ctx, req.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("отзыв не найден")))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if review.UserID != user.ID {
+		ctx.JSON(http.StatusForbidden, errorResponse(errors.New("можно удалять только свои отзывы")))
+		return
+	}
+
+	err = server.store.DeleteReview(ctx, review.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, nil)
+
+}
