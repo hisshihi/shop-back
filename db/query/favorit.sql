@@ -14,9 +14,7 @@ WHERE id = $1 LIMIT 1;
 -- name: ListUserFavorites :many
 SELECT * FROM favorites 
 WHERE user_id = $1
-ORDER BY id
-LIMIT $2
-OFFSET $3;
+ORDER BY id;
 
 -- name: CountFavorit :one
 SELECT COUNT(*) FROM favorites;

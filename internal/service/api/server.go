@@ -90,7 +90,7 @@ func (server *Server) setupServer() {
 	apiGroup := router.Group("/api/v1")
 
 	apiGroup.POST("/login", server.loginUser)
-	apiGroup.POST("/users", server.createUser)
+	apiGroup.POST("/register", server.createUser)
 	apiGroup.GET("/product/:id", server.getProductByID)
 	apiGroup.GET("/product/list", server.listProduct)
 	apiGroup.GET("/review/list", server.getReviewsByProductID)

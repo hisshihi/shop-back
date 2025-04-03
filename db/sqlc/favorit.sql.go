@@ -131,18 +131,10 @@ const listUserFavorites = `-- name: ListUserFavorites :many
 SELECT id, user_id, product_id, created_at FROM favorites 
 WHERE user_id = $1
 ORDER BY id
-LIMIT $2
-OFFSET $3
 `
 
-type ListUserFavoritesParams struct {
-	UserID int64 `json:"user_id"`
-	Limit  int64 `json:"limit"`
-	Offset int64 `json:"offset"`
-}
-
-func (q *Queries) ListUserFavorites(ctx context.Context, arg ListUserFavoritesParams) ([]Favorite, error) {
-	rows, err := q.db.QueryContext(ctx, listUserFavorites, arg.UserID, arg.Limit, arg.Offset)
+func (q *Queries) ListUserFavorites(ctx context.Context, userID int64) ([]Favorite, error) {
+	rows, err := q.db.QueryContext(ctx, listUserFavorites, userID)
 	if err != nil {
 		return nil, err
 	}

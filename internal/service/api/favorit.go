@@ -43,17 +43,17 @@ func (server *Server) createFavorit(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, favorit)
 }
 
-type listFavoritRequest struct {
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
-}
+//type listFavoritRequest struct {
+//	PageID   int32 `form:"page_id" binding:"required,min=1"`
+//	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+//}
 
 func (server *Server) listFavorit(ctx *gin.Context) {
-	var req listFavoritRequest
-	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
+	//	var req listFavoritRequest
+	//	if err := ctx.ShouldBindQuery(&req); err != nil {
+	//		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	//		return
+	//	}
 
 	user, err := server.getUserDataFromToken(ctx)
 	if err != nil {
@@ -61,13 +61,7 @@ func (server *Server) listFavorit(ctx *gin.Context) {
 		return
 	}
 
-	arg := sqlc.ListUserFavoritesParams{
-		UserID: user.ID,
-		Limit:  int64(req.PageSize),
-		Offset: int64((req.PageID - 1) * req.PageSize),
-	}
-
-	listFavorit, err := server.store.ListUserFavorites(ctx, arg)
+	listFavorit, err := server.store.ListUserFavorites(ctx, user.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
