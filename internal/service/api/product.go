@@ -77,6 +77,7 @@ func (server *Server) createProduct(ctx *gin.Context) {
 			"image/jpeg": true,
 			"image/jpg":  true,
 			"image/png":  true,
+			"image/webp": true,
 		}
 		if !allowedTypes[contentType] {
 			ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("данный тип файла не поддерживается")))
