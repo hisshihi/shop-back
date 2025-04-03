@@ -108,6 +108,7 @@ func (server *Server) setupServer() {
 	authRoutes.GET("/order/list", server.listOrdersFromUser)
 	authRoutes.GET("/order-item/:id", server.getOrderItemByID)
 	authRoutes.POST("/review", server.createReview)
+	authRoutes.PUT("/review/:id", server.updateReview)
 
 	// Маршруты доступные администратору
 	adminRoutes := apiGroup.Group("/admin")
