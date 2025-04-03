@@ -17,6 +17,10 @@ ORDER BY id
 LIMIT $1
 OFFSET $2;
 
+-- name: ListCategoriesAll :many
+SELECT * FROM categories 
+ORDER BY name;
+
 -- name: CountCategory :one
 SELECT COUNT(*) FROM categories;
 

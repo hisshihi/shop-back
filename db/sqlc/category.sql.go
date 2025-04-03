@@ -118,6 +118,40 @@ func (q *Queries) ListCategories(ctx context.Context, arg ListCategoriesParams) 
 	return items, nil
 }
 
+const listCategoriesAll = `-- name: ListCategoriesAll :many
+SELECT id, name, description, created_at, updated_at FROM categories 
+ORDER BY name
+`
+
+func (q *Queries) ListCategoriesAll(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.QueryContext(ctx, listCategoriesAll)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateCategory = `-- name: UpdateCategory :one
 UPDATE categories
 SET 

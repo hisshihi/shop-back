@@ -159,8 +159,9 @@ func (server *Server) getProductByID(ctx *gin.Context) {
 }
 
 type listProductRequest struct {
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+	PageID     int32 `form:"page_id" binding:"required,min=1"`
+	PageSize   int32 `form:"page_size" binding:"required,min=5,max=12"`
+	CategoryID int64 `form:"category_id"`
 }
 
 func (server *Server) listProduct(ctx *gin.Context) {
@@ -171,8 +172,10 @@ func (server *Server) listProduct(ctx *gin.Context) {
 	}
 
 	arg := sqlc.ListProductsParams{
-		Limit:  int64(req.PageSize),
-		Offset: int64((req.PageID - 1) * req.PageSize),
+		Column1:    req.CategoryID != 0,
+		CategoryID: req.CategoryID,
+		Limit:      int64(req.PageSize),
+		Offset:     int64((req.PageID - 1) * req.PageSize),
 	}
 
 	listProducts, err := server.store.ListProducts(ctx, arg)

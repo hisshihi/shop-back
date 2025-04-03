@@ -65,18 +65,18 @@ type listCategory struct {
 }
 
 func (server *Server) listCategory(ctx *gin.Context) {
-	var req listCategory
-	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
+	//	var req listCategory
+	//	if err := ctx.ShouldBindQuery(&req); err != nil {
+	//		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	//		return
+	//	}
 
-	arg := sqlc.ListCategoriesParams{
-		Limit:  int64(req.PageSize),
-		Offset: int64((req.PageID - 1) * req.PageSize),
-	}
+	//	arg := sqlc.ListCategoriesParams{
+	//		Limit:  int64(req.PageSize),
+	//		Offset: int64((req.PageID - 1) * req.PageSize),
+	//	}
 
-	listCategory, err := server.store.ListCategories(ctx, arg)
+	listCategory, err := server.store.ListCategoriesAll(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

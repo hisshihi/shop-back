@@ -20,10 +20,12 @@ SELECT id FROM products
 WHERE category_id = $1;
 
 -- name: ListProducts :many
-SELECT * FROM products 
+SELECT id, category_id, name, description, price, stock, photo_url FROM products 
+WHERE
+  CASE WHEN $1::bool THEN category_id = $2 ELSE TRUE END
 ORDER BY id
-LIMIT $1
-OFFSET $2;
+LIMIT $3
+OFFSET $4;
 
 -- name: CountProducts :one
 SELECT COUNT(*) FROM products;

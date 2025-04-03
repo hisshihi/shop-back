@@ -19,6 +19,7 @@ func createRandomProduct(t *testing.T) Product {
 		Description: gofakeit.Sentence(10),
 		Price:       fmt.Sprintf("%.2f", gofakeit.Price(10, 1000)),
 		Stock:       int32(gofakeit.Number(1, 100)),
+		PhotoUrl:    gofakeit.ImageJpeg(400, 300),
 	}
 
 	product, err := testQueries.CreateProduct(context.Background(), arg)
@@ -30,6 +31,7 @@ func createRandomProduct(t *testing.T) Product {
 	require.Equal(t, arg.Description, product.Description)
 	require.Equal(t, arg.Price, product.Price)
 	require.Equal(t, arg.Stock, product.Stock)
+	require.Equal(t, arg.PhotoUrl, product.PhotoUrl)
 	require.NotZero(t, product.ID)
 	require.NotZero(t, product.CreatedAt)
 
@@ -97,6 +99,7 @@ func TestUpdateProduct(t *testing.T) {
 		Description: gofakeit.Sentence(10),
 		Price:       fmt.Sprintf("%.2f", gofakeit.Price(10, 1000)),
 		Stock:       int32(gofakeit.Number(1, 100)),
+		PhotoUrl:    gofakeit.ImageJpeg(400, 300),
 	}
 
 	product2, err := testQueries.UpdateProduct(context.Background(), arg)
@@ -109,6 +112,7 @@ func TestUpdateProduct(t *testing.T) {
 	require.Equal(t, arg.Description, product2.Description)
 	require.Equal(t, arg.Price, product2.Price)
 	require.Equal(t, arg.Stock, product2.Stock)
+	require.Equal(t, arg.PhotoUrl, product2.PhotoUrl)
 	require.WithinDuration(t, product1.CreatedAt, product2.CreatedAt, time.Second)
 	require.NotZero(t, product2.UpdatedAt)
 }

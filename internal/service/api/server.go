@@ -94,6 +94,7 @@ func (server *Server) setupServer() {
 	apiGroup.GET("/product/:id", server.getProductByID)
 	apiGroup.GET("/product/list", server.listProduct)
 	apiGroup.GET("/review/list", server.getReviewsByProductID)
+	apiGroup.GET("/category/list", server.listCategory)
 
 	// Маршруты доступные всем авторизированным пользователям
 	authRoutes := apiGroup.Group("/")
@@ -120,7 +121,6 @@ func (server *Server) setupServer() {
 	adminRoutes.DELETE("/users/:id", server.deleteUser)
 	adminRoutes.POST("/users/banned/:id", server.bannedUser)
 	adminRoutes.POST("/category", server.createCategory)
-	adminRoutes.GET("/category/list", server.listCategory)
 	adminRoutes.PUT("/category/:id", server.updateCategory)
 	adminRoutes.DELETE("/category/:id", server.deleteCategory)
 	adminRoutes.POST("/product", server.createProduct)
