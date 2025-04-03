@@ -20,10 +20,25 @@ SELECT id FROM products
 WHERE category_id = $1;
 
 -- name: ListProducts :many
-SELECT id, category_id, name, description, price, stock, photo_url FROM products 
+SELECT 
+    id, 
+    category_id, 
+    name, 
+    description, 
+    price, 
+    stock, 
+    photo_url 
+FROM products 
 WHERE
-  CASE WHEN $1::bool THEN category_id = $2 ELSE TRUE END
-ORDER BY id
+    CASE WHEN $1::bool THEN category_id = $2 ELSE TRUE END
+    AND 
+    CASE WHEN $5::bool THEN name ILIKE '%' || $6 || '%' ELSE TRUE END
+ORDER BY
+    CASE WHEN $7::bool THEN name END ASC,
+    CASE WHEN $8::bool THEN name END DESC,
+    CASE WHEN $9::bool THEN price END ASC,
+    CASE WHEN $10::bool THEN price END DESC,
+    id ASC
 LIMIT $3
 OFFSET $4;
 

@@ -8,6 +8,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hisshihi/shop-back/db/sqlc"
@@ -159,9 +160,11 @@ func (server *Server) getProductByID(ctx *gin.Context) {
 }
 
 type listProductRequest struct {
-	PageID     int32 `form:"page_id" binding:"required,min=1"`
-	PageSize   int32 `form:"page_size" binding:"required,min=5,max=12"`
-	CategoryID int64 `form:"category_id"`
+	PageID     int32  `form:"page_id" binding:"required,min=1"`
+	PageSize   int32  `form:"page_size" binding:"required,min=5,max=12"`
+	CategoryID int64  `form:"category_id"`
+	Search     string `form:"search"`
+	Sort       string `form:"sort"`
 }
 
 func (server *Server) listProduct(ctx *gin.Context) {
@@ -171,11 +174,18 @@ func (server *Server) listProduct(ctx *gin.Context) {
 		return
 	}
 
+	sortParams := parseSrot(req.Sort)
 	arg := sqlc.ListProductsParams{
 		Column1:    req.CategoryID != 0,
 		CategoryID: req.CategoryID,
 		Limit:      int64(req.PageSize),
 		Offset:     int64((req.PageID - 1) * req.PageSize),
+		Column5:    req.Search != "",
+		Column6:    sql.NullString{String: req.Search, Valid: true},
+		Column7:    sortParams["name_asc"],
+		Column8:    sortParams["name_desc"],
+		Column9:    sortParams["price_asc"],
+		Column10:   sortParams["price_desc"],
 	}
 
 	listProducts, err := server.store.ListProducts(ctx, arg)
@@ -194,6 +204,14 @@ func (server *Server) listProduct(ctx *gin.Context) {
 		"products":       listProducts,
 		"products_count": countProducts,
 	})
+}
+
+func parseSrot(input string) map[string]bool {
+	result := make(map[string]bool)
+	for _, part := range strings.Split(input, ",") {
+		result[strings.TrimSpace(part)] = true
+	}
+	return result
 }
 
 type updateProductRequest struct {

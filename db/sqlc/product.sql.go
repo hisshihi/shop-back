@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 )
 
 const countProducts = `-- name: CountProducts :one
@@ -141,19 +142,40 @@ func (q *Queries) GetProductByID(ctx context.Context, id int64) (Product, error)
 }
 
 const listProducts = `-- name: ListProducts :many
-SELECT id, category_id, name, description, price, stock, photo_url FROM products 
+SELECT 
+    id, 
+    category_id, 
+    name, 
+    description, 
+    price, 
+    stock, 
+    photo_url 
+FROM products 
 WHERE
-  CASE WHEN $1::bool THEN category_id = $2 ELSE TRUE END
-ORDER BY id
+    CASE WHEN $1::bool THEN category_id = $2 ELSE TRUE END
+    AND 
+    CASE WHEN $5::bool THEN name ILIKE '%' || $6 || '%' ELSE TRUE END
+ORDER BY
+    CASE WHEN $7::bool THEN name END ASC,
+    CASE WHEN $8::bool THEN name END DESC,
+    CASE WHEN $9::bool THEN price END ASC,
+    CASE WHEN $10::bool THEN price END DESC,
+    id ASC
 LIMIT $3
 OFFSET $4
 `
 
 type ListProductsParams struct {
-	Column1    bool  `json:"column_1"`
-	CategoryID int64 `json:"category_id"`
-	Limit      int64 `json:"limit"`
-	Offset     int64 `json:"offset"`
+	Column1    bool           `json:"column_1"`
+	CategoryID int64          `json:"category_id"`
+	Limit      int64          `json:"limit"`
+	Offset     int64          `json:"offset"`
+	Column5    bool           `json:"column_5"`
+	Column6    sql.NullString `json:"column_6"`
+	Column7    bool           `json:"column_7"`
+	Column8    bool           `json:"column_8"`
+	Column9    bool           `json:"column_9"`
+	Column10   bool           `json:"column_10"`
 }
 
 type ListProductsRow struct {
@@ -172,6 +194,12 @@ func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]L
 		arg.CategoryID,
 		arg.Limit,
 		arg.Offset,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+		arg.Column8,
+		arg.Column9,
+		arg.Column10,
 	)
 	if err != nil {
 		return nil, err
