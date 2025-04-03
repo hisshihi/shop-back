@@ -160,6 +160,30 @@ func (q *Queries) GetOrderWithItems(ctx context.Context, id int64) (GetOrderWith
 	return i, err
 }
 
+const hasUserPurchasedProduct = `-- name: HasUserPurchasedProduct :one
+SELECT EXISTS (
+    SELECT 1 
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    WHERE 
+        o.user_id = $1 
+        AND oi.product_id = $2
+        AND o.status = 'canceled' -- Если статус заказа важен
+) AS has_purchased
+`
+
+type HasUserPurchasedProductParams struct {
+	UserID    int64 `json:"user_id"`
+	ProductID int64 `json:"product_id"`
+}
+
+func (q *Queries) HasUserPurchasedProduct(ctx context.Context, arg HasUserPurchasedProductParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, hasUserPurchasedProduct, arg.UserID, arg.ProductID)
+	var has_purchased bool
+	err := row.Scan(&has_purchased)
+	return has_purchased, err
+}
+
 const listOrders = `-- name: ListOrders :many
 SELECT id, user_id, total_amount, status, payment_method, delivery_status, created_at, updated_at FROM orders 
 ORDER BY created_at

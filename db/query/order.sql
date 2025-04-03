@@ -27,6 +27,17 @@ ORDER BY created_at
 LIMIT $2
 OFFSET $3;
 
+-- name: HasUserPurchasedProduct :one
+SELECT EXISTS (
+    SELECT 1 
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    WHERE 
+        o.user_id = $1 
+        AND oi.product_id = $2
+        AND o.status = 'canceled' -- Если статус заказа важен
+) AS has_purchased;
+
 -- name: CountOrders :one
 SELECT COUNT(*) FROM orders;
 

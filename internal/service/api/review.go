@@ -43,6 +43,20 @@ func (server *Server) createReview(ctx *gin.Context) {
 		return
 	}
 
+	hashPuchased, err := server.store.HasUserPurchasedProduct(ctx, sqlc.HasUserPurchasedProductParams{
+		UserID:    user.ID,
+		ProductID: req.ProductID,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if !hashPuchased {
+		ctx.JSON(http.StatusForbidden, errorResponse(errors.New("нельзя оставить отзыв на непокупной товар")))
+		return
+	}
+
 	arg := sqlc.CreateReviewParams{
 		UserID:    user.ID,
 		ProductID: req.ProductID,
@@ -57,4 +71,52 @@ func (server *Server) createReview(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, review)
+}
+
+type getReviewsByProductIDRequest struct {
+	ProductID int64 `form:"product_id" binding:"required,min=1"`
+	PageID    int32 `form:"page_id" binding:"required,min=1"`
+	PageSize  int32 `form:"page_size" binding:"required,min=5,max=10"`
+}
+
+func (server *Server) getReviewsByProductID(ctx *gin.Context) {
+	var req getReviewsByProductIDRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.GetReviewByProductIDParams{
+		ProductID: req.ProductID,
+		Limit:     int64(req.PageSize),
+		Offset:    int64((req.PageID - 1) * req.PageSize),
+	}
+
+	reviews, err := server.store.GetReviewByProductID(ctx, arg)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	countReview, err := server.store.CountReviews(ctx, req.ProductID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	average, err := server.store.GetAverageRatingForProvider(ctx, req.ProductID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"review_list":  reviews,
+		"count_review": countReview,
+		"average":      average,
+	})
 }

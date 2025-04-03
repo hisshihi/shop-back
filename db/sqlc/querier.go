@@ -60,6 +60,7 @@ type Querier interface {
 	GetReviewByUserAndProduct(ctx context.Context, arg GetReviewByUserAndProductParams) (Review, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
+	HasUserPurchasedProduct(ctx context.Context, arg HasUserPurchasedProductParams) (bool, error)
 	ListCategories(ctx context.Context, arg ListCategoriesParams) ([]Category, error)
 	ListLogs(ctx context.Context, arg ListLogsParams) ([]Log, error)
 	ListOrderItems(ctx context.Context, orderID int64) ([]OrderItem, error)
