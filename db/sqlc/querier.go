@@ -20,6 +20,7 @@ type Querier interface {
 	CountPromotions(ctx context.Context) (int64, error)
 	CountReviews(ctx context.Context, productID int64) (int64, error)
 	CountUsers(ctx context.Context) (int64, error)
+	CreateCartItem(ctx context.Context, arg CreateCartItemParams) (CartItem, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateFavorite(ctx context.Context, arg CreateFavoriteParams) (Favorite, error)
 	CreateLog(ctx context.Context, arg CreateLogParams) (Log, error)
