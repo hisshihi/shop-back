@@ -9,6 +9,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/sqlc-dev/pqtype"
 )
 
 type OrderStatus string
@@ -98,10 +100,18 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type CartItem struct {
+	ID        int64     `json:"id"`
+	UserID    int64     `json:"user_id"`
+	ProductID int64     `json:"product_id"`
+	Quantity  int32     `json:"quantity"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type Category struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-	// Описание категории, может быть пустым
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
@@ -116,96 +126,96 @@ type Favorite struct {
 
 type Log struct {
 	ID int64 `json:"id"`
-	// Может быть пустым для системных действий
+	// ID пользователя, выполнившего действие (NULL для системных)
 	UserID sql.NullInt64 `json:"user_id"`
-	// Описание действия, например, product_added
-	Action    string    `json:"action"`
-	CreatedAt time.Time `json:"created_at"`
+	// Краткое описание выполненного действия (например, user_login, product_added)
+	Action string `json:"action"`
+	// Дополнительные детали действия в формате JSONB
+	Details   pqtype.NullRawMessage `json:"details"`
+	CreatedAt time.Time             `json:"created_at"`
 }
 
 type Order struct {
 	ID     int64 `json:"id"`
 	UserID int64 `json:"user_id"`
-	// Общая сумма заказа
+	// Общая сумма заказа с учетом скидок и бонусов
 	TotalAmount string `json:"total_amount"`
-	// pending, processed, delivered, canceled
-	Status NullOrderStatus `json:"status"`
-	// Способ оплаты: card, cash
+	// Текущий статус заказа (created, pending, processed, delivered, canceled)
+	Status OrderStatus `json:"status"`
+	// Выбранный способ оплаты (например, card, cash, online)
 	PaymentMethod string `json:"payment_method"`
-	// Статус доставки, может быть пустым
-	DeliveryStatus sql.NullString `json:"delivery_status"`
-	CreatedAt      time.Time      `json:"created_at"`
-	UpdatedAt      time.Time      `json:"updated_at"`
+	// Полный адрес доставки заказа
+	DeliveryAddress string         `json:"delivery_address"`
+	DeliveryStatus  sql.NullString `json:"delivery_status"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
 }
 
 type OrderItem struct {
 	ID        int64 `json:"id"`
 	OrderID   int64 `json:"order_id"`
 	ProductID int64 `json:"product_id"`
-	// Количество товара в заказе
-	Quantity int32 `json:"quantity"`
-	// Цена на момент заказа
+	Quantity  int32 `json:"quantity"`
+	// Цена за единицу товара на момент оформления заказа
 	Price     string    `json:"price"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Product struct {
-	ID         int64  `json:"id"`
-	CategoryID int64  `json:"category_id"`
-	Name       string `json:"name"`
-	// Подробное описание товара
+	ID          int64  `json:"id"`
+	CategoryID  int64  `json:"category_id"`
+	Name        string `json:"name"`
 	Description string `json:"description"`
-	// Цена с двумя знаками после запятой
-	Price string `json:"price"`
-	// Количество на складе
-	Stock     int32     `json:"stock"`
+	Price       string `json:"price"`
+	Stock       int32  `json:"stock"`
+	// URL или путь к фотографии товара
 	PhotoUrl  []byte    `json:"photo_url"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type ProductPromotion struct {
-	ID          int64 `json:"id"`
-	ProductID   int64 `json:"product_id"`
-	PromotionID int64 `json:"promotion_id"`
+	ID          int64     `json:"id"`
+	ProductID   int64     `json:"product_id"`
+	PromotionID int64     `json:"promotion_id"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type Promotion struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-	// Процент скидки
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	// Процент скидки, предоставляемый акцией
 	DiscountPercentage string    `json:"discount_percentage"`
 	StartDate          time.Time `json:"start_date"`
 	EndDate            time.Time `json:"end_date"`
+	IsActive           bool      `json:"is_active"`
 }
 
 type Review struct {
 	ID        int64 `json:"id"`
 	UserID    int64 `json:"user_id"`
 	ProductID int64 `json:"product_id"`
-	// Оценка от 1 до 5
-	Rating int32 `json:"rating"`
-	// Текст отзыва, может быть пустым
+	// Оценка товара пользователем по шкале от 1 до 5
+	Rating    int32          `json:"rating"`
 	Comment   sql.NullString `json:"comment"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 }
 
 type User struct {
-	ID int64 `json:"id"`
-	// Имя пользователя для входа
+	ID       int64  `json:"id"`
 	Username string `json:"username"`
-	// Для авторизации и восстановления пароля
 	Email    string `json:"email"`
 	Fullname string `json:"fullname"`
 	// Хешированный пароль
 	Password string `json:"password"`
-	// user или admin
+	// Роль пользователя (user или admin)
 	Role     UserRole `json:"role"`
 	Phone    string   `json:"phone"`
 	IsBanned bool     `json:"is_banned"`
-	// Накопительные бонусы
+	// Накопительные бонусные баллы пользователя
 	BonusPoints int32     `json:"bonus_points"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`

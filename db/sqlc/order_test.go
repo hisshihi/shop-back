@@ -14,11 +14,12 @@ import (
 func createRandomOrder(t *testing.T) Order {
 	user := createRandomUser(t)
 	arg := CreateOrderParams{
-		UserID:         user.ID,
-		TotalAmount:    fmt.Sprintf("%.2f", gofakeit.Price(50, 500)),
-		Status:         NullOrderStatus{OrderStatus: OrderStatusCreated, Valid: true},
-		PaymentMethod:  "card",
-		DeliveryStatus: sql.NullString{},
+		UserID:          user.ID,
+		TotalAmount:     fmt.Sprintf("%.2f", gofakeit.Price(50, 500)),
+		Status:          OrderStatusCreated,
+		PaymentMethod:   "card",
+		DeliveryAddress: gofakeit.Address().Address,
+		DeliveryStatus:  sql.NullString{},
 	}
 
 	order, err := testQueries.CreateOrder(context.Background(), arg)
@@ -30,6 +31,7 @@ func createRandomOrder(t *testing.T) Order {
 	require.Equal(t, arg.Status, order.Status)
 	require.Equal(t, arg.PaymentMethod, order.PaymentMethod)
 	require.Equal(t, arg.DeliveryStatus, order.DeliveryStatus)
+	require.Equal(t, arg.DeliveryAddress, order.DeliveryAddress)
 	require.NotZero(t, order.ID)
 	require.NotZero(t, order.CreatedAt)
 
@@ -52,6 +54,7 @@ func TestGetOrderByID(t *testing.T) {
 	require.Equal(t, order1.Status, order2.Status)
 	require.Equal(t, order1.PaymentMethod, order2.PaymentMethod)
 	require.Equal(t, order1.DeliveryStatus, order2.DeliveryStatus)
+	require.Equal(t, order1.DeliveryAddress, order2.DeliveryAddress)
 	require.WithinDuration(t, order1.CreatedAt, order2.CreatedAt, time.Second)
 }
 
@@ -91,7 +94,7 @@ func TestUpdateOrderStatus(t *testing.T) {
 	order1 := createRandomOrder(t)
 	arg := UpdateOrderStatusParams{
 		ID:             order1.ID,
-		Status:         NullOrderStatus{OrderStatus: OrderStatusDelivered, Valid: true},
+		Status:         OrderStatusDelivered,
 		DeliveryStatus: sql.NullString{},
 	}
 

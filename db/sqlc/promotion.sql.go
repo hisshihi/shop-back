@@ -30,7 +30,7 @@ INSERT INTO promotions (
 ) VALUES (
   $1, $2, $3, $4
 )
-RETURNING id, name, discount_percentage, start_date, end_date
+RETURNING id, name, description, discount_percentage, start_date, end_date, is_active
 `
 
 type CreatePromotionParams struct {
@@ -51,9 +51,11 @@ func (q *Queries) CreatePromotion(ctx context.Context, arg CreatePromotionParams
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Description,
 		&i.DiscountPercentage,
 		&i.StartDate,
 		&i.EndDate,
+		&i.IsActive,
 	)
 	return i, err
 }
@@ -69,7 +71,7 @@ func (q *Queries) DeletePromotion(ctx context.Context, id int64) error {
 }
 
 const getPromotionByID = `-- name: GetPromotionByID :one
-SELECT id, name, discount_percentage, start_date, end_date FROM promotions 
+SELECT id, name, description, discount_percentage, start_date, end_date, is_active FROM promotions 
 WHERE id = $1 LIMIT 1
 `
 
@@ -79,15 +81,17 @@ func (q *Queries) GetPromotionByID(ctx context.Context, id int64) (Promotion, er
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Description,
 		&i.DiscountPercentage,
 		&i.StartDate,
 		&i.EndDate,
+		&i.IsActive,
 	)
 	return i, err
 }
 
 const listPromotions = `-- name: ListPromotions :many
-SELECT id, name, discount_percentage, start_date, end_date FROM promotions 
+SELECT id, name, description, discount_percentage, start_date, end_date, is_active FROM promotions 
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -110,9 +114,11 @@ func (q *Queries) ListPromotions(ctx context.Context, arg ListPromotionsParams) 
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Description,
 			&i.DiscountPercentage,
 			&i.StartDate,
 			&i.EndDate,
+			&i.IsActive,
 		); err != nil {
 			return nil, err
 		}
@@ -135,7 +141,7 @@ SET
   start_date = $4,
   end_date = $5
 WHERE id = $1
-RETURNING id, name, discount_percentage, start_date, end_date
+RETURNING id, name, description, discount_percentage, start_date, end_date, is_active
 `
 
 type UpdatePromotionParams struct {
@@ -158,9 +164,11 @@ func (q *Queries) UpdatePromotion(ctx context.Context, arg UpdatePromotionParams
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Description,
 		&i.DiscountPercentage,
 		&i.StartDate,
 		&i.EndDate,
+		&i.IsActive,
 	)
 	return i, err
 }

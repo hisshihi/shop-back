@@ -16,7 +16,7 @@ INSERT INTO product_promotions (
 ) VALUES (
   $1, $2
 )
-RETURNING id, product_id, promotion_id
+RETURNING id, product_id, promotion_id, created_at
 `
 
 type CreateProductPromotionParams struct {
@@ -27,7 +27,12 @@ type CreateProductPromotionParams struct {
 func (q *Queries) CreateProductPromotion(ctx context.Context, arg CreateProductPromotionParams) (ProductPromotion, error) {
 	row := q.db.QueryRowContext(ctx, createProductPromotion, arg.ProductID, arg.PromotionID)
 	var i ProductPromotion
-	err := row.Scan(&i.ID, &i.ProductID, &i.PromotionID)
+	err := row.Scan(
+		&i.ID,
+		&i.ProductID,
+		&i.PromotionID,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
@@ -42,19 +47,24 @@ func (q *Queries) DeleteProductPromotion(ctx context.Context, id int64) error {
 }
 
 const getProductPromotionByID = `-- name: GetProductPromotionByID :one
-SELECT id, product_id, promotion_id FROM product_promotions 
+SELECT id, product_id, promotion_id, created_at FROM product_promotions 
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetProductPromotionByID(ctx context.Context, id int64) (ProductPromotion, error) {
 	row := q.db.QueryRowContext(ctx, getProductPromotionByID, id)
 	var i ProductPromotion
-	err := row.Scan(&i.ID, &i.ProductID, &i.PromotionID)
+	err := row.Scan(
+		&i.ID,
+		&i.ProductID,
+		&i.PromotionID,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
 const listProductPromotions = `-- name: ListProductPromotions :many
-SELECT id, product_id, promotion_id FROM product_promotions 
+SELECT id, product_id, promotion_id, created_at FROM product_promotions 
 WHERE product_id = $1
 ORDER BY id
 `
@@ -68,7 +78,12 @@ func (q *Queries) ListProductPromotions(ctx context.Context, productID int64) ([
 	items := []ProductPromotion{}
 	for rows.Next() {
 		var i ProductPromotion
-		if err := rows.Scan(&i.ID, &i.ProductID, &i.PromotionID); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductID,
+			&i.PromotionID,
+			&i.CreatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

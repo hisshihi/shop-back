@@ -42,19 +42,21 @@ INSERT INTO orders (
   total_amount, 
   status, 
   payment_method, 
-  delivery_status
+  delivery_status,
+  delivery_address
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6
 )
-RETURNING id, user_id, total_amount, status, payment_method, delivery_status, created_at, updated_at
+RETURNING id, user_id, total_amount, status, payment_method, delivery_address, delivery_status, created_at, updated_at
 `
 
 type CreateOrderParams struct {
-	UserID         int64           `json:"user_id"`
-	TotalAmount    string          `json:"total_amount"`
-	Status         NullOrderStatus `json:"status"`
-	PaymentMethod  string          `json:"payment_method"`
-	DeliveryStatus sql.NullString  `json:"delivery_status"`
+	UserID          int64          `json:"user_id"`
+	TotalAmount     string         `json:"total_amount"`
+	Status          OrderStatus    `json:"status"`
+	PaymentMethod   string         `json:"payment_method"`
+	DeliveryStatus  sql.NullString `json:"delivery_status"`
+	DeliveryAddress string         `json:"delivery_address"`
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
@@ -64,6 +66,7 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		arg.Status,
 		arg.PaymentMethod,
 		arg.DeliveryStatus,
+		arg.DeliveryAddress,
 	)
 	var i Order
 	err := row.Scan(
@@ -72,6 +75,7 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		&i.TotalAmount,
 		&i.Status,
 		&i.PaymentMethod,
+		&i.DeliveryAddress,
 		&i.DeliveryStatus,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -90,7 +94,7 @@ func (q *Queries) DeleteOrder(ctx context.Context, id int64) error {
 }
 
 const getOrderByID = `-- name: GetOrderByID :one
-SELECT id, user_id, total_amount, status, payment_method, delivery_status, created_at, updated_at FROM orders 
+SELECT id, user_id, total_amount, status, payment_method, delivery_address, delivery_status, created_at, updated_at FROM orders 
 WHERE id = $1 LIMIT 1
 `
 
@@ -103,6 +107,7 @@ func (q *Queries) GetOrderByID(ctx context.Context, id int64) (Order, error) {
 		&i.TotalAmount,
 		&i.Status,
 		&i.PaymentMethod,
+		&i.DeliveryAddress,
 		&i.DeliveryStatus,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -112,7 +117,7 @@ func (q *Queries) GetOrderByID(ctx context.Context, id int64) (Order, error) {
 
 const getOrderWithItems = `-- name: GetOrderWithItems :one
 SELECT 
-  orders.id, orders.user_id, orders.total_amount, orders.status, orders.payment_method, orders.delivery_status, orders.created_at, orders.updated_at,
+  orders.id, orders.user_id, orders.total_amount, orders.status, orders.payment_method, orders.delivery_address, orders.delivery_status, orders.created_at, orders.updated_at,
   COALESCE(
     json_agg(
       json_build_object(
@@ -132,15 +137,16 @@ GROUP BY orders.id
 `
 
 type GetOrderWithItemsRow struct {
-	ID             int64                 `json:"id"`
-	UserID         int64                 `json:"user_id"`
-	TotalAmount    string                `json:"total_amount"`
-	Status         NullOrderStatus       `json:"status"`
-	PaymentMethod  string                `json:"payment_method"`
-	DeliveryStatus sql.NullString        `json:"delivery_status"`
-	CreatedAt      time.Time             `json:"created_at"`
-	UpdatedAt      time.Time             `json:"updated_at"`
-	Items          pqtype.NullRawMessage `json:"items"`
+	ID              int64                 `json:"id"`
+	UserID          int64                 `json:"user_id"`
+	TotalAmount     string                `json:"total_amount"`
+	Status          OrderStatus           `json:"status"`
+	PaymentMethod   string                `json:"payment_method"`
+	DeliveryAddress string                `json:"delivery_address"`
+	DeliveryStatus  sql.NullString        `json:"delivery_status"`
+	CreatedAt       time.Time             `json:"created_at"`
+	UpdatedAt       time.Time             `json:"updated_at"`
+	Items           pqtype.NullRawMessage `json:"items"`
 }
 
 func (q *Queries) GetOrderWithItems(ctx context.Context, id int64) (GetOrderWithItemsRow, error) {
@@ -152,6 +158,7 @@ func (q *Queries) GetOrderWithItems(ctx context.Context, id int64) (GetOrderWith
 		&i.TotalAmount,
 		&i.Status,
 		&i.PaymentMethod,
+		&i.DeliveryAddress,
 		&i.DeliveryStatus,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -185,7 +192,7 @@ func (q *Queries) HasUserPurchasedProduct(ctx context.Context, arg HasUserPurcha
 }
 
 const listOrders = `-- name: ListOrders :many
-SELECT id, user_id, total_amount, status, payment_method, delivery_status, created_at, updated_at FROM orders 
+SELECT id, user_id, total_amount, status, payment_method, delivery_address, delivery_status, created_at, updated_at FROM orders 
 ORDER BY created_at
 LIMIT $1
 OFFSET $2
@@ -211,6 +218,7 @@ func (q *Queries) ListOrders(ctx context.Context, arg ListOrdersParams) ([]Order
 			&i.TotalAmount,
 			&i.Status,
 			&i.PaymentMethod,
+			&i.DeliveryAddress,
 			&i.DeliveryStatus,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -229,7 +237,7 @@ func (q *Queries) ListOrders(ctx context.Context, arg ListOrdersParams) ([]Order
 }
 
 const listOrdersByUserID = `-- name: ListOrdersByUserID :many
-SELECT id, user_id, total_amount, status, payment_method, delivery_status, created_at, updated_at FROM orders
+SELECT id, user_id, total_amount, status, payment_method, delivery_address, delivery_status, created_at, updated_at FROM orders
 WHERE user_id = $1
 ORDER BY created_at
 LIMIT $2
@@ -257,6 +265,7 @@ func (q *Queries) ListOrdersByUserID(ctx context.Context, arg ListOrdersByUserID
 			&i.TotalAmount,
 			&i.Status,
 			&i.PaymentMethod,
+			&i.DeliveryAddress,
 			&i.DeliveryStatus,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -276,7 +285,7 @@ func (q *Queries) ListOrdersByUserID(ctx context.Context, arg ListOrdersByUserID
 
 const listOrdersByUserIDWithItems = `-- name: ListOrdersByUserIDWithItems :many
 SELECT 
-  orders.id, orders.user_id, orders.total_amount, orders.status, orders.payment_method, orders.delivery_status, orders.created_at, orders.updated_at,
+  orders.id, orders.user_id, orders.total_amount, orders.status, orders.payment_method, orders.delivery_address, orders.delivery_status, orders.created_at, orders.updated_at,
   COALESCE(
     json_agg(
       json_build_object(
@@ -305,15 +314,16 @@ type ListOrdersByUserIDWithItemsParams struct {
 }
 
 type ListOrdersByUserIDWithItemsRow struct {
-	ID             int64                 `json:"id"`
-	UserID         int64                 `json:"user_id"`
-	TotalAmount    string                `json:"total_amount"`
-	Status         NullOrderStatus       `json:"status"`
-	PaymentMethod  string                `json:"payment_method"`
-	DeliveryStatus sql.NullString        `json:"delivery_status"`
-	CreatedAt      time.Time             `json:"created_at"`
-	UpdatedAt      time.Time             `json:"updated_at"`
-	Items          pqtype.NullRawMessage `json:"items"`
+	ID              int64                 `json:"id"`
+	UserID          int64                 `json:"user_id"`
+	TotalAmount     string                `json:"total_amount"`
+	Status          OrderStatus           `json:"status"`
+	PaymentMethod   string                `json:"payment_method"`
+	DeliveryAddress string                `json:"delivery_address"`
+	DeliveryStatus  sql.NullString        `json:"delivery_status"`
+	CreatedAt       time.Time             `json:"created_at"`
+	UpdatedAt       time.Time             `json:"updated_at"`
+	Items           pqtype.NullRawMessage `json:"items"`
 }
 
 func (q *Queries) ListOrdersByUserIDWithItems(ctx context.Context, arg ListOrdersByUserIDWithItemsParams) ([]ListOrdersByUserIDWithItemsRow, error) {
@@ -331,6 +341,7 @@ func (q *Queries) ListOrdersByUserIDWithItems(ctx context.Context, arg ListOrder
 			&i.TotalAmount,
 			&i.Status,
 			&i.PaymentMethod,
+			&i.DeliveryAddress,
 			&i.DeliveryStatus,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -351,7 +362,7 @@ func (q *Queries) ListOrdersByUserIDWithItems(ctx context.Context, arg ListOrder
 
 const listOrdersWithItems = `-- name: ListOrdersWithItems :many
 SELECT 
-  orders.id, orders.user_id, orders.total_amount, orders.status, orders.payment_method, orders.delivery_status, orders.created_at, orders.updated_at,
+  orders.id, orders.user_id, orders.total_amount, orders.status, orders.payment_method, orders.delivery_address, orders.delivery_status, orders.created_at, orders.updated_at,
   COALESCE(
     json_agg(
       json_build_object(
@@ -378,15 +389,16 @@ type ListOrdersWithItemsParams struct {
 }
 
 type ListOrdersWithItemsRow struct {
-	ID             int64                 `json:"id"`
-	UserID         int64                 `json:"user_id"`
-	TotalAmount    string                `json:"total_amount"`
-	Status         NullOrderStatus       `json:"status"`
-	PaymentMethod  string                `json:"payment_method"`
-	DeliveryStatus sql.NullString        `json:"delivery_status"`
-	CreatedAt      time.Time             `json:"created_at"`
-	UpdatedAt      time.Time             `json:"updated_at"`
-	Items          pqtype.NullRawMessage `json:"items"`
+	ID              int64                 `json:"id"`
+	UserID          int64                 `json:"user_id"`
+	TotalAmount     string                `json:"total_amount"`
+	Status          OrderStatus           `json:"status"`
+	PaymentMethod   string                `json:"payment_method"`
+	DeliveryAddress string                `json:"delivery_address"`
+	DeliveryStatus  sql.NullString        `json:"delivery_status"`
+	CreatedAt       time.Time             `json:"created_at"`
+	UpdatedAt       time.Time             `json:"updated_at"`
+	Items           pqtype.NullRawMessage `json:"items"`
 }
 
 func (q *Queries) ListOrdersWithItems(ctx context.Context, arg ListOrdersWithItemsParams) ([]ListOrdersWithItemsRow, error) {
@@ -404,6 +416,7 @@ func (q *Queries) ListOrdersWithItems(ctx context.Context, arg ListOrdersWithIte
 			&i.TotalAmount,
 			&i.Status,
 			&i.PaymentMethod,
+			&i.DeliveryAddress,
 			&i.DeliveryStatus,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -429,13 +442,13 @@ SET
   delivery_status = $3,
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, user_id, total_amount, status, payment_method, delivery_status, created_at, updated_at
+RETURNING id, user_id, total_amount, status, payment_method, delivery_address, delivery_status, created_at, updated_at
 `
 
 type UpdateOrderStatusParams struct {
-	ID             int64           `json:"id"`
-	Status         NullOrderStatus `json:"status"`
-	DeliveryStatus sql.NullString  `json:"delivery_status"`
+	ID             int64          `json:"id"`
+	Status         OrderStatus    `json:"status"`
+	DeliveryStatus sql.NullString `json:"delivery_status"`
 }
 
 func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error) {
@@ -447,6 +460,7 @@ func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusPa
 		&i.TotalAmount,
 		&i.Status,
 		&i.PaymentMethod,
+		&i.DeliveryAddress,
 		&i.DeliveryStatus,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -462,10 +476,10 @@ WITH updated_order AS (
         delivery_status = $3,
         updated_at = NOW()
     WHERE id = $1
-    RETURNING id, user_id, total_amount, status, payment_method, delivery_status, created_at, updated_at
+    RETURNING id, user_id, total_amount, status, payment_method, delivery_address, delivery_status, created_at, updated_at
 )
 SELECT 
-    uo.id, uo.user_id, uo.total_amount, uo.status, uo.payment_method, uo.delivery_status, uo.created_at, uo.updated_at,
+    uo.id, uo.user_id, uo.total_amount, uo.status, uo.payment_method, uo.delivery_address, uo.delivery_status, uo.created_at, uo.updated_at,
     COALESCE(
         json_agg(
             json_build_object(
@@ -487,6 +501,7 @@ GROUP BY
     uo.status, 
     uo.payment_method, 
     uo.delivery_status, 
+    uo.delivery_address,
     uo.created_at, 
     uo.updated_at
 `
@@ -498,15 +513,16 @@ type UpdateOrderStatusWithItemsParams struct {
 }
 
 type UpdateOrderStatusWithItemsRow struct {
-	ID             int64                 `json:"id"`
-	UserID         int64                 `json:"user_id"`
-	TotalAmount    string                `json:"total_amount"`
-	Status         NullOrderStatus       `json:"status"`
-	PaymentMethod  string                `json:"payment_method"`
-	DeliveryStatus sql.NullString        `json:"delivery_status"`
-	CreatedAt      time.Time             `json:"created_at"`
-	UpdatedAt      time.Time             `json:"updated_at"`
-	Items          pqtype.NullRawMessage `json:"items"`
+	ID              int64                 `json:"id"`
+	UserID          int64                 `json:"user_id"`
+	TotalAmount     string                `json:"total_amount"`
+	Status          OrderStatus           `json:"status"`
+	PaymentMethod   string                `json:"payment_method"`
+	DeliveryAddress string                `json:"delivery_address"`
+	DeliveryStatus  sql.NullString        `json:"delivery_status"`
+	CreatedAt       time.Time             `json:"created_at"`
+	UpdatedAt       time.Time             `json:"updated_at"`
+	Items           pqtype.NullRawMessage `json:"items"`
 }
 
 func (q *Queries) UpdateOrderStatusWithItems(ctx context.Context, arg UpdateOrderStatusWithItemsParams) (UpdateOrderStatusWithItemsRow, error) {
@@ -518,6 +534,7 @@ func (q *Queries) UpdateOrderStatusWithItems(ctx context.Context, arg UpdateOrde
 		&i.TotalAmount,
 		&i.Status,
 		&i.PaymentMethod,
+		&i.DeliveryAddress,
 		&i.DeliveryStatus,
 		&i.CreatedAt,
 		&i.UpdatedAt,

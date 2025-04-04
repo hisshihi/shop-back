@@ -101,6 +101,16 @@ func (server *Server) deleteFavorit(ctx *gin.Context) {
 		UserID: user.ID,
 	}
 
+	_, err = server.store.GetFavoriteByID(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	err = server.store.DeleteFavoritForID(ctx, arg)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -111,7 +121,7 @@ func (server *Server) deleteFavorit(ctx *gin.Context) {
 		return
 	}
 
-	action := fmt.Sprintf("Добавление в избранное. Пользователь ID: %v. Товар ID: %v", user.ID, req.ID)
+	action := fmt.Sprintf("Удаление избранного. Пользователь ID: %v. Товар ID: %v", user.ID, req.ID)
 	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusNoContent, nil)

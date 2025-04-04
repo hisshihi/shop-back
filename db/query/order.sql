@@ -4,9 +4,10 @@ INSERT INTO orders (
   total_amount, 
   status, 
   payment_method, 
-  delivery_status
+  delivery_status,
+  delivery_address
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING *;
 
@@ -156,5 +157,6 @@ GROUP BY
     uo.status, 
     uo.payment_method, 
     uo.delivery_status, 
+    uo.delivery_address,
     uo.created_at, 
     uo.updated_at;

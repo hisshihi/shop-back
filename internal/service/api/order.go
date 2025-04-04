@@ -11,9 +11,10 @@ import (
 )
 
 type createOrderRequest struct {
-	TotalAmount   string                       `json:"total_amount" binding:"required"`
-	PaymentMethod string                       `json:"payment_method" binding:"required"`
-	Items         []service.OrderItemTxRequest `json:"items" binding:"required,min=1"`
+	TotalAmount     string                       `json:"total_amount" binding:"required"`
+	PaymentMethod   string                       `json:"payment_method" binding:"required"`
+	DeliveryAddress string                       `json:"delivery_address" binding:"required"`
+	Items           []service.OrderItemTxRequest `json:"items" binding:"required,min=1"`
 }
 
 func (server *Server) createOrder(ctx *gin.Context) {
@@ -30,10 +31,11 @@ func (server *Server) createOrder(ctx *gin.Context) {
 	}
 
 	arg := sqlc.CreateOrderParams{
-		UserID:        user.ID,
-		TotalAmount:   req.TotalAmount,
-		Status:        sqlc.NullOrderStatus{OrderStatus: sqlc.OrderStatusCreated, Valid: true},
-		PaymentMethod: req.PaymentMethod,
+		UserID:          user.ID,
+		TotalAmount:     req.TotalAmount,
+		Status:          sqlc.OrderStatusCreated,
+		PaymentMethod:   req.PaymentMethod,
+		DeliveryAddress: req.DeliveryAddress,
 	}
 
 	order, err := server.store.CreateOrderTx(ctx, arg, req.Items)
