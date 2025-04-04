@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -58,4 +59,44 @@ func (server *Server) listCartItem(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, listCartItem)
+}
+
+type getCartItemByIdRequest struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) deleteCartItem(ctx *gin.Context) {
+	var req getCartItemByIdRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	_, err = server.store.GetCartItemByID(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.DeleteCartItemByIDAndUserIDParams{
+		ID:     req.ID,
+		UserID: user.ID,
+	}
+
+	err = server.store.DeleteCartItemByIDAndUserID(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, nil)
 }

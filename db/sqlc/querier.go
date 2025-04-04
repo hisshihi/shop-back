@@ -31,6 +31,7 @@ type Querier interface {
 	CreatePromotion(ctx context.Context, arg CreatePromotionParams) (Promotion, error)
 	CreateReview(ctx context.Context, arg CreateReviewParams) (Review, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteCartItemByIDAndUserID(ctx context.Context, arg DeleteCartItemByIDAndUserIDParams) error
 	DeleteCategory(ctx context.Context, id int64) error
 	DeleteFavoritForID(ctx context.Context, arg DeleteFavoritForIDParams) error
 	DeleteFavorite(ctx context.Context, id int64) error
@@ -46,6 +47,7 @@ type Querier interface {
 	DeleteReview(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
 	GetAverageRatingForProvider(ctx context.Context, productID int64) (GetAverageRatingForProviderRow, error)
+	GetCartItemByID(ctx context.Context, id int64) (CartItem, error)
 	GetCategoryByID(ctx context.Context, id int64) (Category, error)
 	GetFavoriteByID(ctx context.Context, id int64) (Favorite, error)
 	GetLogByID(ctx context.Context, id int64) (Log, error)

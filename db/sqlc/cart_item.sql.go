@@ -41,6 +41,41 @@ func (q *Queries) CreateCartItem(ctx context.Context, arg CreateCartItemParams) 
 	return i, err
 }
 
+const deleteCartItemByIDAndUserID = `-- name: DeleteCartItemByIDAndUserID :exec
+DELETE FROM cart_items
+WHERE id = $1 AND user_id = $2
+`
+
+type DeleteCartItemByIDAndUserIDParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) DeleteCartItemByIDAndUserID(ctx context.Context, arg DeleteCartItemByIDAndUserIDParams) error {
+	_, err := q.db.ExecContext(ctx, deleteCartItemByIDAndUserID, arg.ID, arg.UserID)
+	return err
+}
+
+const getCartItemByID = `-- name: GetCartItemByID :one
+SELECT id, user_id, product_id, quantity, created_at, updated_at FROM cart_items
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetCartItemByID(ctx context.Context, id int64) (CartItem, error) {
+	row := q.db.QueryRowContext(ctx, getCartItemByID, id)
+	var i CartItem
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ProductID,
+		&i.Quantity,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listCartItemByUserID = `-- name: ListCartItemByUserID :many
 SELECT
   cart_items.id, cart_items.user_id, cart_items.product_id, cart_items.quantity, cart_items.created_at, cart_items.updated_at,

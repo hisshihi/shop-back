@@ -113,6 +113,7 @@ func (server *Server) setupServer() {
 	authRoutes.DELETE("/review/:id", server.deleteReview)
 	authRoutes.POST("/cart-item", server.createCartItem)
 	authRoutes.GET("/cart-item/list", server.listCartItem)
+	authRoutes.DELETE("/cart-item/:id", server.deleteCartItem)
 
 	// Маршруты доступные администратору
 	adminRoutes := apiGroup.Group("/admin")

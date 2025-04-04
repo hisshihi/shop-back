@@ -8,6 +8,11 @@ INSERT INTO cart_items (
   )
 RETURNING *;
 
+-- name: GetCartItemByID :one
+SELECT * FROM cart_items
+WHERE id = $1
+LIMIT 1;
+
 -- name: ListCartItemByUserID :many
 SELECT
   cart_items.*,
@@ -19,3 +24,7 @@ SELECT
   FROM cart_items
 JOIN products ON cart_items.product_id = products.id
 WHERE cart_items.user_id = $1;
+
+-- name: DeleteCartItemByIDAndUserID :exec
+DELETE FROM cart_items
+WHERE id = $1 AND user_id = $2;
