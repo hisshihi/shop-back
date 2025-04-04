@@ -62,6 +62,7 @@ type Querier interface {
 	GetUser(ctx context.Context, username string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	HasUserPurchasedProduct(ctx context.Context, arg HasUserPurchasedProductParams) (bool, error)
+	ListCartItemByUserID(ctx context.Context, userID int64) ([]ListCartItemByUserIDRow, error)
 	ListCategories(ctx context.Context, arg ListCategoriesParams) ([]Category, error)
 	ListCategoriesAll(ctx context.Context) ([]Category, error)
 	ListLogs(ctx context.Context, arg ListLogsParams) ([]Log, error)

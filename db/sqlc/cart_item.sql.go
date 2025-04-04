@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"time"
 )
 
 const createCartItem = `-- name: CreateCartItem :one
@@ -38,4 +39,66 @@ func (q *Queries) CreateCartItem(ctx context.Context, arg CreateCartItemParams) 
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const listCartItemByUserID = `-- name: ListCartItemByUserID :many
+SELECT
+  cart_items.id, cart_items.user_id, cart_items.product_id, cart_items.quantity, cart_items.created_at, cart_items.updated_at,
+  products.name,
+  products.price,
+  products.description,
+  products.stock,
+  products.photo_url
+  FROM cart_items
+JOIN products ON cart_items.product_id = products.id
+WHERE cart_items.user_id = $1
+`
+
+type ListCartItemByUserIDRow struct {
+	ID          int64     `json:"id"`
+	UserID      int64     `json:"user_id"`
+	ProductID   int64     `json:"product_id"`
+	Quantity    int32     `json:"quantity"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Name        string    `json:"name"`
+	Price       string    `json:"price"`
+	Description string    `json:"description"`
+	Stock       int32     `json:"stock"`
+	PhotoUrl    []byte    `json:"photo_url"`
+}
+
+func (q *Queries) ListCartItemByUserID(ctx context.Context, userID int64) ([]ListCartItemByUserIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCartItemByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListCartItemByUserIDRow{}
+	for rows.Next() {
+		var i ListCartItemByUserIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.ProductID,
+			&i.Quantity,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.Price,
+			&i.Description,
+			&i.Stock,
+			&i.PhotoUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

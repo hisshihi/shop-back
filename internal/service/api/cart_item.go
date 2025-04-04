@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -37,5 +38,24 @@ func (server *Server) createCartItem(ctx *gin.Context) {
 		return
 	}
 
+	action := fmt.Sprintf("Добавление товара в корзину ID: %v", req.ProductID)
+	server.createLog(ctx, user.ID, action)
+
 	ctx.JSON(http.StatusOK, cartItem)
+}
+
+func (server *Server) listCartItem(ctx *gin.Context) {
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	listCartItem, err := server.store.ListCartItemByUserID(ctx, user.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, listCartItem)
 }
