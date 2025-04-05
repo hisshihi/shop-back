@@ -16,11 +16,10 @@ import (
 type OrderStatus string
 
 const (
-	OrderStatusCreated   OrderStatus = "created"
-	OrderStatusPending   OrderStatus = "pending"
-	OrderStatusProcessed OrderStatus = "processed"
-	OrderStatusDelivered OrderStatus = "delivered"
-	OrderStatusCanceled  OrderStatus = "canceled"
+	OrderStatusProcessed  OrderStatus = "processed"
+	OrderStatusDelivering OrderStatus = "delivering"
+	OrderStatusDelivered  OrderStatus = "delivered"
+	OrderStatusCanceled   OrderStatus = "canceled"
 )
 
 func (e *OrderStatus) Scan(src interface{}) error {

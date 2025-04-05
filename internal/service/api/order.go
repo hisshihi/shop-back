@@ -33,7 +33,7 @@ func (server *Server) createOrder(ctx *gin.Context) {
 	arg := sqlc.CreateOrderParams{
 		UserID:          user.ID,
 		TotalAmount:     req.TotalAmount,
-		Status:          sqlc.OrderStatusCreated,
+		Status:          sqlc.OrderStatusProcessed,
 		PaymentMethod:   req.PaymentMethod,
 		DeliveryAddress: req.DeliveryAddress,
 	}

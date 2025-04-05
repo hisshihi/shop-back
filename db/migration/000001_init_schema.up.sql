@@ -11,9 +11,8 @@ CREATE TYPE "user_role" AS ENUM (
 );
 
 CREATE TYPE "order_status" AS ENUM (
-  'created',
-  'pending',
   'processed',
+  'delivering',
   'delivered',
   'canceled'
 );
@@ -76,7 +75,7 @@ CREATE TABLE "orders" (
   "id" bigserial PRIMARY KEY,
   "user_id" bigint NOT NULL,
   "total_amount" decimal(10,2) NOT NULL CHECK (total_amount >= 0),
-  "status" order_status NOT NULL DEFAULT 'created',
+  "status" order_status NOT NULL DEFAULT 'processed',
   "payment_method" varchar(50) NOT NULL, -- Рекомендуется ENUM или отдельная таблица
   "delivery_address" text NOT NULL, -- Добавлено поле адреса доставки
   "delivery_status" varchar(50), -- Рекомендуется ENUM или отдельная таблица

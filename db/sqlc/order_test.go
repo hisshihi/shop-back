@@ -16,7 +16,7 @@ func createRandomOrder(t *testing.T) Order {
 	arg := CreateOrderParams{
 		UserID:          user.ID,
 		TotalAmount:     fmt.Sprintf("%.2f", gofakeit.Price(50, 500)),
-		Status:          OrderStatusCreated,
+		Status:          OrderStatusProcessed,
 		PaymentMethod:   "card",
 		DeliveryAddress: gofakeit.Address().Address,
 		DeliveryStatus:  sql.NullString{},
@@ -94,7 +94,7 @@ func TestUpdateOrderStatus(t *testing.T) {
 	order1 := createRandomOrder(t)
 	arg := UpdateOrderStatusParams{
 		ID:             order1.ID,
-		Status:         OrderStatusDelivered,
+		Status:         OrderStatusDelivering,
 		DeliveryStatus: sql.NullString{},
 	}
 
