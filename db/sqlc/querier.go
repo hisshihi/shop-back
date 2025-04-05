@@ -85,6 +85,7 @@ type Querier interface {
 	UpdateOrderStatusWithItems(ctx context.Context, arg UpdateOrderStatusWithItemsParams) (UpdateOrderStatusWithItemsRow, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdatePromotion(ctx context.Context, arg UpdatePromotionParams) (Promotion, error)
+	UpdateQuantityCartItem(ctx context.Context, arg UpdateQuantityCartItemParams) (CartItem, error)
 	UpdateReview(ctx context.Context, arg UpdateReviewParams) (Review, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }

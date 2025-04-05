@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -99,4 +100,43 @@ func (server *Server) deleteCartItem(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusNoContent, nil)
+}
+
+type updateQuantityCartItemRequest struct {
+	Quantity int32 `json:"quantity" binding:"required,min=1"`
+}
+
+func (server *Server) updateQuantityCartItem(ctx *gin.Context) {
+	var reqID getCartItemByIdRequest
+	var req updateQuantityCartItemRequest
+
+	if err := ctx.ShouldBindUri(&reqID); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.UpdateQuantityCartItemParams{
+		ID:       reqID.ID,
+		UserID:   user.ID,
+		Quantity: req.Quantity,
+	}
+
+	updateCartItem, err := server.store.UpdateQuantityCartItem(ctx, arg)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updateCartItem)
 }

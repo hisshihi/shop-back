@@ -28,3 +28,10 @@ WHERE cart_items.user_id = $1;
 -- name: DeleteCartItemByIDAndUserID :exec
 DELETE FROM cart_items
 WHERE id = $1 AND user_id = $2;
+
+-- name: UpdateQuantityCartItem :one
+UPDATE cart_items SET
+quantity = $3,
+updated_at = NOW()
+WHERE id = $1 AND user_id = $2
+RETURNING *;

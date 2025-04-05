@@ -137,3 +137,31 @@ func (q *Queries) ListCartItemByUserID(ctx context.Context, userID int64) ([]Lis
 	}
 	return items, nil
 }
+
+const updateQuantityCartItem = `-- name: UpdateQuantityCartItem :one
+UPDATE cart_items SET
+quantity = $3,
+updated_at = NOW()
+WHERE id = $1 AND user_id = $2
+RETURNING id, user_id, product_id, quantity, created_at, updated_at
+`
+
+type UpdateQuantityCartItemParams struct {
+	ID       int64 `json:"id"`
+	UserID   int64 `json:"user_id"`
+	Quantity int32 `json:"quantity"`
+}
+
+func (q *Queries) UpdateQuantityCartItem(ctx context.Context, arg UpdateQuantityCartItemParams) (CartItem, error) {
+	row := q.db.QueryRowContext(ctx, updateQuantityCartItem, arg.ID, arg.UserID, arg.Quantity)
+	var i CartItem
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ProductID,
+		&i.Quantity,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
