@@ -128,12 +128,6 @@ func (server *Server) listOrders(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.getUserDataFromToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
 	arg := sqlc.ListOrdersWithItemsParams{
 		Limit:  int64(req.PageSize),
 		Offset: int64((req.PageID - 1) * req.PageSize),
@@ -145,7 +139,7 @@ func (server *Server) listOrders(ctx *gin.Context) {
 		return
 	}
 
-	countOrders, err := server.store.CountOrderByUserID(ctx, user.ID)
+	countOrders, err := server.store.CountOrders(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
