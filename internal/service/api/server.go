@@ -101,6 +101,7 @@ func (server *Server) setupServer() {
 	authRoutes.Use(server.authMiddleware())
 	authRoutes.GET("/users", server.getUserByID)
 	authRoutes.PUT("/users", server.updateUser)
+	authRoutes.POST("/users/change-password", server.changePassword)
 	authRoutes.POST("/favorit", server.createFavorit)
 	authRoutes.GET("/favorit/list", server.listFavorit)
 	authRoutes.DELETE("/favorit/:id", server.deleteFavorit)

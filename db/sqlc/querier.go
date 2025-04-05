@@ -23,6 +23,7 @@ type Querier interface {
 	CreateCartItem(ctx context.Context, arg CreateCartItemParams) (CartItem, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateFavorite(ctx context.Context, arg CreateFavoriteParams) (Favorite, error)
+	CreateHelpMessage(ctx context.Context, arg CreateHelpMessageParams) (Help, error)
 	CreateLog(ctx context.Context, arg CreateLogParams) (Log, error)
 	CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error)
 	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
@@ -31,6 +32,7 @@ type Querier interface {
 	CreatePromotion(ctx context.Context, arg CreatePromotionParams) (Promotion, error)
 	CreateReview(ctx context.Context, arg CreateReviewParams) (Review, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteAllCartItemByUserID(ctx context.Context, userID int64) error
 	DeleteCartItemByIDAndUserID(ctx context.Context, arg DeleteCartItemByIDAndUserIDParams) error
 	DeleteCategory(ctx context.Context, id int64) error
 	DeleteFavoritForID(ctx context.Context, arg DeleteFavoritForIDParams) error
@@ -67,6 +69,7 @@ type Querier interface {
 	ListCartItemByUserID(ctx context.Context, userID int64) ([]ListCartItemByUserIDRow, error)
 	ListCategories(ctx context.Context, arg ListCategoriesParams) ([]Category, error)
 	ListCategoriesAll(ctx context.Context) ([]Category, error)
+	ListHelpMesage(ctx context.Context, arg ListHelpMesageParams) ([]Help, error)
 	ListLogs(ctx context.Context, arg ListLogsParams) ([]Log, error)
 	ListOrderItems(ctx context.Context, orderID int64) ([]OrderItem, error)
 	ListOrders(ctx context.Context, arg ListOrdersParams) ([]Order, error)
@@ -83,6 +86,7 @@ type Querier interface {
 	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (OrderItem, error)
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error)
 	UpdateOrderStatusWithItems(ctx context.Context, arg UpdateOrderStatusWithItemsParams) (UpdateOrderStatusWithItemsRow, error)
+	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdatePromotion(ctx context.Context, arg UpdatePromotionParams) (Promotion, error)
 	UpdateQuantityCartItem(ctx context.Context, arg UpdateQuantityCartItemParams) (CartItem, error)

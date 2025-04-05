@@ -124,6 +124,14 @@ type Favorite struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type Help struct {
+	ID        int64     `json:"id"`
+	Email     string    `json:"email"`
+	Topic     string    `json:"topic"`
+	Message   string    `json:"message"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type Log struct {
 	ID int64 `json:"id"`
 	// ID пользователя, выполнившего действие (NULL для системных)

@@ -30,8 +30,7 @@ SET
   username = $2,
   email = $3,
   fullname = $4,
-  password = $5,
-  phone = $6,
+  phone = $5,
   updated_at = NOW()
 WHERE id = $1
 RETURNING *;
@@ -49,3 +48,9 @@ UPDATE users
 SET is_banned = true 
 WHERE id = $1
 RETURNING *;
+
+-- name: UpdatePassword :exec
+UPDATE users
+SET
+password = $2
+WHERE id = $1;

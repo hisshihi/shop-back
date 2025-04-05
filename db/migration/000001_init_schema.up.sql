@@ -63,6 +63,14 @@ CREATE TABLE "cart_items" (
   -- Уникальный индекс будет создан ниже
 );
 
+CREATE TABLE "help" (
+  "id" bigserial PRIMARY KEY,
+  "email" varchar(255) NOT NULL,
+  "topic" varchar(255) NOT NULL,
+  "message" varchar(255) NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now())
+);
+
 CREATE TABLE "orders" (
   "id" bigserial PRIMARY KEY,
   "user_id" bigint NOT NULL,

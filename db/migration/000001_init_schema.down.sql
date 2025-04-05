@@ -35,6 +35,7 @@ DROP TABLE IF EXISTS "products";
 DROP TABLE IF EXISTS "promotions";
 DROP TABLE IF EXISTS "categories";
 DROP TABLE IF EXISTS "users";
+DROP TABLE IF EXISTS "help";
 
 -- Удаление пользовательских типов ENUM
 -- Удаляются последними, после удаления всех таблиц, которые их используют

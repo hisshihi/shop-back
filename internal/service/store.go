@@ -178,6 +178,12 @@ func (store *Store) CreateOrderTx(ctx context.Context, arg sqlc.CreateOrderParam
 				return err
 			}
 		}
+
+		// Удаление товаров из корзины после создания заказа
+		err = q.DeleteAllCartItemByUserID(ctx, order.UserID)
+		if err != nil {
+			return fmt.Errorf("не удалось очистить корзину %w", err)
+		}
 		return nil
 	})
 

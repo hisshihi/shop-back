@@ -199,10 +199,9 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := util.HashPassword(req.Password)
+	err = util.CheckPassword(req.Password, user.Password)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("пароли не совпадают")))
 	}
 
 	arg := sqlc.UpdateUserParams{
@@ -210,7 +209,6 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		Username: req.Username,
 		Email:    req.Email,
 		Fullname: req.Fullname,
-		Password: hashedPassword,
 		Phone:    req.Phone,
 	}
 
@@ -232,6 +230,50 @@ func (server *Server) updateUser(ctx *gin.Context) {
 	server.createLog(ctx, user.ID, action)
 
 	ctx.JSON(http.StatusOK, rsp)
+}
+
+type changePasswordRequest struct {
+	OldPassword string `json:"oldPassword" binding:"required"`
+	NewPassword string `json:"newPassword" binding:"required,min=6"`
+}
+
+func (server *Server) changePassword(ctx *gin.Context) {
+	var req changePasswordRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.getUserDataFromToken(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	err = util.CheckPassword(req.OldPassword, user.Password)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("пароли не совпадают")))
+		return
+	}
+
+	newHashedPassword, err := util.HashPassword(req.NewPassword)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.UpdatePasswordParams{
+		ID:       user.ID,
+		Password: newHashedPassword,
+	}
+
+	err = server.store.UpdatePassword(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "пароль успешно изменён"})
 }
 
 func (server *Server) deleteUser(ctx *gin.Context) {

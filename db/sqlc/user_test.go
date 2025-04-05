@@ -63,15 +63,11 @@ func TestGetUserByID(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	user1 := createRandomUser(t)
 
-	hashedPassword, err := util.HashPassword(gofakeit.Password(true, true, true, true, false, 6))
-	require.NoError(t, err)
-
 	arg := UpdateUserParams{
 		ID:       user1.ID,
 		Username: gofakeit.Username(),
 		Fullname: gofakeit.Name(),
 		Email:    gofakeit.Email(),
-		Password: hashedPassword,
 		Phone:    gofakeit.Phone(),
 	}
 
@@ -83,7 +79,6 @@ func TestUpdateUser(t *testing.T) {
 	require.Equal(t, arg.Username, user2.Username)
 	require.Equal(t, arg.Email, user2.Email)
 	require.Equal(t, arg.Fullname, user2.Fullname)
-	require.Equal(t, arg.Password, user2.Password)
 	require.Equal(t, arg.Phone, user2.Phone)
 	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
 }
