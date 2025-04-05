@@ -8,6 +8,7 @@ package sqlc
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const countReviews = `-- name: CountReviews :one
@@ -111,9 +112,10 @@ func (q *Queries) GetReviewByID(ctx context.Context, id int64) (Review, error) {
 }
 
 const getReviewByProductID = `-- name: GetReviewByProductID :many
-SELECT id, user_id, product_id, rating, comment, created_at, updated_at FROM reviews
+SELECT reviews.id, reviews.user_id, reviews.product_id, reviews.rating, reviews.comment, reviews.created_at, reviews.updated_at, users.fullname AS full_name FROM reviews
+JOIN users ON reviews.user_id = users.id
 WHERE product_id = $1
-ORDER BY created_at
+ORDER BY reviews.created_at
 LIMIT $2
 OFFSET $3
 `
@@ -124,15 +126,26 @@ type GetReviewByProductIDParams struct {
 	Offset    int64 `json:"offset"`
 }
 
-func (q *Queries) GetReviewByProductID(ctx context.Context, arg GetReviewByProductIDParams) ([]Review, error) {
+type GetReviewByProductIDRow struct {
+	ID        int64          `json:"id"`
+	UserID    int64          `json:"user_id"`
+	ProductID int64          `json:"product_id"`
+	Rating    int32          `json:"rating"`
+	Comment   sql.NullString `json:"comment"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	FullName  string         `json:"full_name"`
+}
+
+func (q *Queries) GetReviewByProductID(ctx context.Context, arg GetReviewByProductIDParams) ([]GetReviewByProductIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getReviewByProductID, arg.ProductID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Review{}
+	items := []GetReviewByProductIDRow{}
 	for rows.Next() {
-		var i Review
+		var i GetReviewByProductIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -141,6 +154,7 @@ func (q *Queries) GetReviewByProductID(ctx context.Context, arg GetReviewByProdu
 			&i.Comment,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.FullName,
 		); err != nil {
 			return nil, err
 		}

@@ -36,7 +36,7 @@ SELECT EXISTS (
     WHERE 
         o.user_id = $1 
         AND oi.product_id = $2
-        AND o.status = 'canceled' -- Если статус заказа важен
+       -- AND o.status = 'canceled' -- Если статус заказа важен
 ) AS has_purchased;
 
 -- name: CountOrders :one

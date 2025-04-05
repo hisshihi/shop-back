@@ -14,9 +14,10 @@ SELECT * FROM reviews
 WHERE id = $1 LIMIT 1;
 
 -- name: GetReviewByProductID :many
-SELECT * FROM reviews
+SELECT reviews.*, users.fullname AS full_name FROM reviews
+JOIN users ON reviews.user_id = users.id
 WHERE product_id = $1
-ORDER BY created_at
+ORDER BY reviews.created_at
 LIMIT $2
 OFFSET $3;
 
