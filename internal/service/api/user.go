@@ -296,14 +296,29 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, nil)
 }
 
+type updateBanRequest struct {
+	IsBanned *bool `json:"is_banned" binding:"required"`
+}
+
 func (server *Server) bannedUser(ctx *gin.Context) {
-	var req getUserByIDRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
+	var reqID getUserByIDRequest
+	if err := ctx.ShouldBindUri(&reqID); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	isBanned, err := server.store.BannedUser(ctx, req.ID)
+	var req updateBanRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.BannedUserParams{
+		ID:       reqID.ID,
+		IsBanned: *req.IsBanned,
+	}
+
+	isBanned, err := server.store.BannedUser(ctx, arg)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))

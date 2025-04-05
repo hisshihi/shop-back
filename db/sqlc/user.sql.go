@@ -11,13 +11,19 @@ import (
 
 const bannedUser = `-- name: BannedUser :one
 UPDATE users
-SET is_banned = true 
+SET is_banned = $2, 
+updated_at = NOW()
 WHERE id = $1
 RETURNING id, username, email, fullname, password, role, phone, is_banned, bonus_points, created_at, updated_at
 `
 
-func (q *Queries) BannedUser(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRowContext(ctx, bannedUser, id)
+type BannedUserParams struct {
+	ID       int64 `json:"id"`
+	IsBanned bool  `json:"is_banned"`
+}
+
+func (q *Queries) BannedUser(ctx context.Context, arg BannedUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, bannedUser, arg.ID, arg.IsBanned)
 	var i User
 	err := row.Scan(
 		&i.ID,

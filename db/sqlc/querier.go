@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	BannedUser(ctx context.Context, id int64) (User, error)
+	BannedUser(ctx context.Context, arg BannedUserParams) (User, error)
 	CountCategory(ctx context.Context) (int64, error)
 	CountFavorit(ctx context.Context) (int64, error)
 	CountFavoritForUser(ctx context.Context, userID int64) (int64, error)

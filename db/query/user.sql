@@ -45,7 +45,8 @@ WHERE username = $1;
 
 -- name: BannedUser :one
 UPDATE users
-SET is_banned = true 
+SET is_banned = $2, 
+updated_at = NOW()
 WHERE id = $1
 RETURNING *;
 

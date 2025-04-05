@@ -125,7 +125,7 @@ func (server *Server) setupServer() {
 	adminRoutes.GET("/users/:id", server.getUserByIDForAdmin)
 	adminRoutes.GET("/users/list", server.listUsers)
 	adminRoutes.DELETE("/users/:id", server.deleteUser)
-	adminRoutes.POST("/users/banned/:id", server.bannedUser)
+	adminRoutes.PATCH("/users/banned/:id", server.bannedUser)
 	adminRoutes.POST("/category", server.createCategory)
 	adminRoutes.PUT("/category/:id", server.updateCategory)
 	adminRoutes.DELETE("/category/:id", server.deleteCategory)
