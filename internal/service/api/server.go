@@ -95,6 +95,7 @@ func (server *Server) setupServer() {
 	apiGroup.GET("/product/list", server.listProduct)
 	apiGroup.GET("/review/list", server.getReviewsByProductID)
 	apiGroup.GET("/category/list", server.listCategory)
+	apiGroup.POST("/support", server.createHelpMessage)
 
 	// Маршруты доступные всем авторизированным пользователям
 	authRoutes := apiGroup.Group("/")

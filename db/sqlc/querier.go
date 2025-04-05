@@ -13,6 +13,7 @@ type Querier interface {
 	CountCategory(ctx context.Context) (int64, error)
 	CountFavorit(ctx context.Context) (int64, error)
 	CountFavoritForUser(ctx context.Context, userID int64) (int64, error)
+	CountHelpMessage(ctx context.Context) (int64, error)
 	CountLogs(ctx context.Context) (int64, error)
 	CountOrderByUserID(ctx context.Context, userID int64) (int64, error)
 	CountOrders(ctx context.Context) (int64, error)
@@ -39,6 +40,7 @@ type Querier interface {
 	DeleteFavorite(ctx context.Context, id int64) error
 	DeleteFavoriteByProductID(ctx context.Context, productID int64) (int64, error)
 	DeleteFavoritesByCategoryID(ctx context.Context, categoryID int64) (int64, error)
+	DeleteHelpMessage(ctx context.Context, id int64) error
 	DeleteOrder(ctx context.Context, id int64) error
 	DeleteOrderItem(ctx context.Context, id int64) error
 	DeleteOrderItemByOrderID(ctx context.Context, orderID int64) (int64, error)
@@ -52,6 +54,7 @@ type Querier interface {
 	GetCartItemByID(ctx context.Context, id int64) (CartItem, error)
 	GetCategoryByID(ctx context.Context, id int64) (Category, error)
 	GetFavoriteByID(ctx context.Context, id int64) (Favorite, error)
+	GetHelpMessageByID(ctx context.Context, id int64) (Help, error)
 	GetLogByID(ctx context.Context, id int64) (Log, error)
 	GetOrderByID(ctx context.Context, id int64) (Order, error)
 	GetOrderItemByID(ctx context.Context, id int64) (OrderItem, error)

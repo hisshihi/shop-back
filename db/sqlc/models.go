@@ -126,6 +126,7 @@ type Favorite struct {
 
 type Help struct {
 	ID        int64     `json:"id"`
+	Fullname  string    `json:"fullname"`
 	Email     string    `json:"email"`
 	Topic     string    `json:"topic"`
 	Message   string    `json:"message"`

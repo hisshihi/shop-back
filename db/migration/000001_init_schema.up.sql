@@ -65,6 +65,7 @@ CREATE TABLE "cart_items" (
 
 CREATE TABLE "help" (
   "id" bigserial PRIMARY KEY,
+  "fullname" varchar(255) NOT NULL,
   "email" varchar(255) NOT NULL,
   "topic" varchar(255) NOT NULL,
   "message" varchar(255) NOT NULL,

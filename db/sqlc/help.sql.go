@@ -9,28 +9,77 @@ import (
 	"context"
 )
 
+const countHelpMessage = `-- name: CountHelpMessage :one
+SELECT COUNT(*) FROM help
+`
+
+func (q *Queries) CountHelpMessage(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countHelpMessage)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createHelpMessage = `-- name: CreateHelpMessage :one
 INSERT INTO help (
+  fullname,
  email,
   topic,
 message
 ) VALUES (
-$1, $2, $3
+$1, $2, $3, $4
   )
-RETURNING id, email, topic, message, created_at
+RETURNING id, fullname, email, topic, message, created_at
 `
 
 type CreateHelpMessageParams struct {
-	Email   string `json:"email"`
-	Topic   string `json:"topic"`
-	Message string `json:"message"`
+	Fullname string `json:"fullname"`
+	Email    string `json:"email"`
+	Topic    string `json:"topic"`
+	Message  string `json:"message"`
 }
 
 func (q *Queries) CreateHelpMessage(ctx context.Context, arg CreateHelpMessageParams) (Help, error) {
-	row := q.db.QueryRowContext(ctx, createHelpMessage, arg.Email, arg.Topic, arg.Message)
+	row := q.db.QueryRowContext(ctx, createHelpMessage,
+		arg.Fullname,
+		arg.Email,
+		arg.Topic,
+		arg.Message,
+	)
 	var i Help
 	err := row.Scan(
 		&i.ID,
+		&i.Fullname,
+		&i.Email,
+		&i.Topic,
+		&i.Message,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const deleteHelpMessage = `-- name: DeleteHelpMessage :exec
+DELETE FROM help
+WHERE id = $1
+`
+
+func (q *Queries) DeleteHelpMessage(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteHelpMessage, id)
+	return err
+}
+
+const getHelpMessageByID = `-- name: GetHelpMessageByID :one
+SELECT id, fullname, email, topic, message, created_at FROM help
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetHelpMessageByID(ctx context.Context, id int64) (Help, error) {
+	row := q.db.QueryRowContext(ctx, getHelpMessageByID, id)
+	var i Help
+	err := row.Scan(
+		&i.ID,
+		&i.Fullname,
 		&i.Email,
 		&i.Topic,
 		&i.Message,
@@ -40,7 +89,7 @@ func (q *Queries) CreateHelpMessage(ctx context.Context, arg CreateHelpMessagePa
 }
 
 const listHelpMesage = `-- name: ListHelpMesage :many
-SELECT id, email, topic, message, created_at FROM help
+SELECT id, fullname, email, topic, message, created_at FROM help
 ORDER BY created_at
 LIMIT $1
 OFFSET $2
@@ -62,6 +111,7 @@ func (q *Queries) ListHelpMesage(ctx context.Context, arg ListHelpMesageParams) 
 		var i Help
 		if err := rows.Scan(
 			&i.ID,
+			&i.Fullname,
 			&i.Email,
 			&i.Topic,
 			&i.Message,
