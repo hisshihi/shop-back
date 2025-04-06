@@ -340,3 +340,13 @@ func (server *Server) getTopProduct(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, topProduct)
 }
+
+func (server *Server) countProduct(ctx *gin.Context) {
+	count, err := server.store.CountProducts(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, count)
+}

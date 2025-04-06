@@ -172,3 +172,6 @@ JOIN order_items oi ON o.id = oi.order_id
 WHERE o.created_at >= (NOW() AT TIME ZONE 'Etc/GMT-5' - INTERVAL '1 month') AT TIME ZONE 'UTC'
 GROUP BY DATE(o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-5')
 ORDER BY date DESC;
+
+-- name: SumTotalAmount :one
+SELECT SUM(total_amount) FROM orders;

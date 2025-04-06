@@ -483,6 +483,17 @@ func (q *Queries) ListOrdersWithItems(ctx context.Context, arg ListOrdersWithIte
 	return items, nil
 }
 
+const sumTotalAmount = `-- name: SumTotalAmount :one
+SELECT SUM(total_amount) FROM orders
+`
+
+func (q *Queries) SumTotalAmount(ctx context.Context) (string, error) {
+	row := q.db.QueryRowContext(ctx, sumTotalAmount)
+	var sum string
+	err := row.Scan(&sum)
+	return sum, err
+}
+
 const updateOrderStatus = `-- name: UpdateOrderStatus :one
 UPDATE orders
 SET 

@@ -87,6 +87,7 @@ type Querier interface {
 	ListReviews(ctx context.Context, arg ListReviewsParams) ([]Review, error)
 	ListUserFavorites(ctx context.Context, userID int64) ([]Favorite, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	SumTotalAmount(ctx context.Context) (string, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (OrderItem, error)
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error)

@@ -136,11 +136,16 @@ func (server *Server) setupServer() {
 	adminRoutes.GET("/order/list", server.listOrders)
 	adminRoutes.PUT("/order/:id", server.updateOrderStatus)
 	adminRoutes.DELETE("/order/:id", server.deleteOrder)
+
+	// Статистика
 	adminRoutes.GET("/order-stats", server.getSalesStats)
 	adminRoutes.GET("/top-product", server.getTopProduct)
 	adminRoutes.GET("/count-order", server.getCountOrders)
 	adminRoutes.GET("/backup/sql", server.createSQLBackup)
 	adminRoutes.GET("/backup/csv", server.createCSVBackup)
+	adminRoutes.GET("/users-count", server.countUsers)
+	adminRoutes.GET("/product-count", server.countProduct)
+	adminRoutes.GET("/order-sum", server.getSumOrders)
 
 	server.router = router
 

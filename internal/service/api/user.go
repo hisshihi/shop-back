@@ -386,3 +386,13 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, rsp)
 }
+
+func (server *Server) countUsers(ctx *gin.Context) {
+	count, err := server.store.CountUsers(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, count)
+}

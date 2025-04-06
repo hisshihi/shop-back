@@ -249,3 +249,13 @@ func (server *Server) getCountOrders(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, count)
 }
+
+func (server *Server) getSumOrders(ctx *gin.Context) {
+	sum, err := server.store.SumTotalAmount(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, sum)
+}
