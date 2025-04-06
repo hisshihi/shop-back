@@ -334,7 +334,7 @@ func (server *Server) deleteProduct(ctx *gin.Context) {
 func (server *Server) getTopProduct(ctx *gin.Context) {
 	topProduct, err := server.store.GetTopProducts(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusNoContent, errorResponse(err))
 		return
 	}
 
@@ -344,7 +344,7 @@ func (server *Server) getTopProduct(ctx *gin.Context) {
 func (server *Server) countProduct(ctx *gin.Context) {
 	count, err := server.store.CountProducts(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusNoContent, errorResponse(err))
 		return
 	}
 

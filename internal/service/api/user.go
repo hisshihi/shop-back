@@ -390,7 +390,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 func (server *Server) countUsers(ctx *gin.Context) {
 	count, err := server.store.CountUsers(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusNoContent, errorResponse(err))
 		return
 	}
 

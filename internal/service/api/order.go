@@ -234,7 +234,7 @@ func (server *Server) deleteOrder(ctx *gin.Context) {
 func (server *Server) getSalesStats(ctx *gin.Context) {
 	stats, err := server.store.GetSalesStats(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusNoContent, errorResponse(err))
 	}
 
 	ctx.JSON(http.StatusOK, stats)
@@ -243,7 +243,7 @@ func (server *Server) getSalesStats(ctx *gin.Context) {
 func (server *Server) getCountOrders(ctx *gin.Context) {
 	count, err := server.store.CountOrders(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusNoContent, errorResponse(err))
 		return
 	}
 
@@ -253,7 +253,7 @@ func (server *Server) getCountOrders(ctx *gin.Context) {
 func (server *Server) getSumOrders(ctx *gin.Context) {
 	sum, err := server.store.SumTotalAmount(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusNoContent, errorResponse(err))
 		return
 	}
 

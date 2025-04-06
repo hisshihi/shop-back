@@ -1,15 +1,21 @@
 package api
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
+	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hisshihi/shop-back/pkg/util"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 func (server *Server) createSQLBackup(ctx *gin.Context) {
@@ -30,57 +36,105 @@ func (server *Server) createSQLBackup(ctx *gin.Context) {
 }
 
 func (server *Server) createCSVBackup(c *gin.Context) {
-	outputDir := "./csv_backup"
-	if err := os.MkdirAll(outputDir, os.ModePerm); err != nil {
-		c.JSON(500, gin.H{"error": "Не удалось создать директорию"})
+	outputDir, err := os.MkdirTemp("", "csv_backup_*")
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Не удалось создать временную директорию"})
 		return
 	}
+	defer os.RemoveAll(outputDir)
 
-	// Получаем список таблиц через стандартное подключение (это не меняется)
-	rows, err := server.store.DB().Query("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
+	rows, err := server.store.DB().Query(`
+        SELECT tablename 
+        FROM pg_tables 
+        WHERE schemaname = 'public'
+        AND tablename NOT LIKE 'pg_%'
+    `)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Ошибка при получении списка таблиц"})
 		return
 	}
 	defer rows.Close()
 
+	var exportedTables int
 	for rows.Next() {
 		var tableName string
 		if err := rows.Scan(&tableName); err != nil {
 			continue
 		}
+
 		csvPath := filepath.Join(outputDir, tableName+".csv")
-
-		// Получаем соединение из pgx pool
-		conn, err := server.store.PgxPool.Acquire(context.Background())
-		if err != nil {
-			log.Printf("Ошибка получения pgx соединения: %v", err)
-			continue
+		if err := exportTableToCSV(server.store.PgxPool, tableName, csvPath); err == nil {
+			exportedTables++
 		}
-		// Освобождаем соединение после работы
-		// (заметьте, что если Acuire вернул ошибку, Release не требуется)
-		defer conn.Release()
-
-		query := "COPY (SELECT * FROM public." + tableName + ") TO STDOUT WITH CSV HEADER"
-
-		// Создаем файл для записи
-		file, err := os.Create(csvPath)
-		if err != nil {
-			log.Printf("Ошибка создания файла %s: %v", csvPath, err)
-			continue
-		}
-
-		// Используем pgx для выполнения COPY TO STDOUT
-		// Функция CopyTo принимает контекст, объект-назначение (в нашем случае файл) и запрос.
-		_, err = conn.Conn().PgConn().CopyTo(context.Background(), file, query)
-		if err != nil {
-			log.Printf("Ошибка экспорта таблицы %s: %v", tableName, err)
-			file.Close()
-			continue
-		}
-		file.Close()
 	}
 
-	// После экспорта таблиц упаковываем файлы в ZIP
-	util.CreateZip(c, outputDir)
+	if exportedTables == 0 {
+		c.JSON(500, gin.H{"error": "Не удалось экспортировать ни одной таблицы"})
+		return
+	}
+
+	zipBuffer := new(bytes.Buffer)
+	zipWriter := zip.NewWriter(zipBuffer)
+
+	err = filepath.WalkDir(outputDir, func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+
+		relPath, _ := filepath.Rel(outputDir, path)
+		data, _ := os.ReadFile(path)
+
+		header := &zip.FileHeader{
+			Name:     relPath,
+			Method:   zip.Deflate,
+			Flags:    0x800,
+			Modified: time.Now(),
+		}
+
+		writer, _ := zipWriter.CreateHeader(header)
+		writer.Write(data)
+		return nil
+	})
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Ошибка упаковки архива"})
+		return
+	}
+
+	zipWriter.Close()
+
+	c.Header("Content-Type", "application/zip")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=backup_%s.zip", time.Now().Format("20060102-150405")))
+	c.Data(200, "application/zip", zipBuffer.Bytes())
+}
+
+func exportTableToCSV(pool *pgxpool.Pool, tableName, csvPath string) error {
+	conn, err := pool.Acquire(context.Background())
+	if err != nil {
+		return fmt.Errorf("ошибка подключения: %w", err)
+	}
+	defer conn.Release()
+
+	// Указываем кодировку UTF-8 и разделители
+	query := fmt.Sprintf(
+		"COPY (SELECT * FROM %s) TO STDOUT WITH (FORMAT CSV, HEADER, ENCODING 'UTF-8', DELIMITER ',')",
+		pgx.Identifier{tableName}.Sanitize(),
+	)
+
+	file, err := os.Create(csvPath)
+	if err != nil {
+		return fmt.Errorf("ошибка создания файла: %w", err)
+	}
+	defer file.Close()
+
+	// Записываем BOM для UTF-8 (необязательно, но помогает некоторым программам)
+	if _, err := file.Write([]byte{0xEF, 0xBB, 0xBF}); err != nil {
+		return fmt.Errorf("ошибка записи BOM: %w", err)
+	}
+
+	_, err = conn.Conn().PgConn().CopyTo(context.Background(), file, query)
+	if err != nil {
+		return fmt.Errorf("ошибка экспорта данных: %w", err)
+	}
+
+	return nil
 }
