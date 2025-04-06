@@ -22,7 +22,9 @@ func main() {
 		log.Fatal("cannot connect to db:", err)
 	}
 
-	store := service.NewStore(conn)
+	pgxPool := service.NewPgxPool(config.DBSource)
+
+	store := service.NewStore(conn, pgxPool)
 	server, err := api.NewServer(store, config)
 	if err != nil {
 		log.Fatal("cannot create server:", err)

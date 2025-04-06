@@ -139,6 +139,8 @@ func (server *Server) setupServer() {
 	adminRoutes.GET("/order-stats", server.getSalesStats)
 	adminRoutes.GET("/top-product", server.getTopProduct)
 	adminRoutes.GET("/count-order", server.getCountOrders)
+	adminRoutes.GET("/backup/sql", server.createSQLBackup)
+	adminRoutes.GET("/backup/csv", server.createCSVBackup)
 
 	server.router = router
 

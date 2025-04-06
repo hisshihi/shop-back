@@ -1,0 +1,58 @@
+id,user_id,total_amount,status,payment_method,delivery_address,delivery_status,created_at,updated_at
+2,31,394.21,processed,card,"2169 Lake Terracemouth, Orlando, Illinois 54552",,2025-04-05 22:17:21.626998+00,2025-04-05 22:17:21.626998+00
+3,32,362.39,processed,card,"233 Lake Rapidshire, San Antonio, Arkansas 20081",,2025-04-05 22:17:22.815899+00,2025-04-05 22:17:22.815899+00
+4,33,103.87,processed,card,"656 Inletmouth, Plano, Rhode Island 97378",,2025-04-05 22:17:27.658676+00,2025-04-05 22:17:27.658676+00
+5,34,213.11,processed,card,"143 Trackton, Arlington, Hawaii 32317",,2025-04-05 22:17:28.849741+00,2025-04-05 22:17:28.849741+00
+6,35,405.94,processed,card,"321 Wellsburgh, Laredo, Kansas 64235",,2025-04-05 22:17:30.040797+00,2025-04-05 22:17:30.040797+00
+7,36,183.45,processed,card,"88298 Lake Driveport, Corpus Christi, Nebraska 80251",,2025-04-05 22:17:30.932568+00,2025-04-05 22:17:30.932568+00
+8,37,257.02,processed,card,"1581 Plainsburgh, Jacksonville, Minnesota 65670",,2025-04-05 22:17:31.790814+00,2025-04-05 22:17:31.790814+00
+9,38,332.58,processed,card,"7211 East Pointsmouth, Durham, North Dakota 46887",,2025-04-05 22:17:32.628554+00,2025-04-05 22:17:32.628554+00
+10,39,139.98,processed,card,"202 Ranchtown, Corpus Christi, New Jersey 21113",,2025-04-05 22:17:33.465977+00,2025-04-05 22:17:33.465977+00
+11,40,163.25,processed,card,"32879 South Streetton, Scottsdale, Texas 65663",,2025-04-05 22:17:34.308724+00,2025-04-05 22:17:34.308724+00
+12,41,430.37,processed,card,"7294 Manorsstad, Irving, Georgia 12173",,2025-04-05 22:17:35.261699+00,2025-04-05 22:17:35.261699+00
+13,42,277.25,processed,card,"8407 Islandsstad, Hialeah, Indiana 15644",,2025-04-05 22:17:36.225837+00,2025-04-05 22:17:36.225837+00
+14,43,313.81,processed,card,"3088 East Flatsfort, Fremont, Utah 56114",,2025-04-05 22:17:37.073065+00,2025-04-05 22:17:37.073065+00
+15,44,248.59,processed,card,"1360 Routefort, San Antonio, Tennessee 67008",,2025-04-05 22:17:37.913775+00,2025-04-05 22:17:37.913775+00
+16,45,408.16,processed,card,"5856 Lake Valleymouth, Pittsburgh, California 60757",,2025-04-05 22:17:38.73372+00,2025-04-05 22:17:38.73372+00
+17,46,181.34,processed,card,"9204 Forksborough, Dallas, North Dakota 74166",,2025-04-05 22:17:39.656745+00,2025-04-05 22:17:39.656745+00
+18,47,179.75,processed,card,"2747 South Avenueville, Lincoln, Texas 10639",,2025-04-05 22:17:40.513761+00,2025-04-05 22:17:40.513761+00
+19,48,109.56,processed,card,"13975 New Turnpikeview, Greensboro, Oklahoma 69433",,2025-04-05 22:17:41.373714+00,2025-04-05 22:17:41.373714+00
+20,49,155.42,processed,card,"155 Lake Mountainton, Riverside, California 43871",,2025-04-05 22:17:42.228505+00,2025-04-05 22:17:42.228505+00
+21,50,147.01,processed,card,"13420 Havenstad, Omaha, Kentucky 79863",,2025-04-05 22:17:43.07094+00,2025-04-05 22:17:43.07094+00
+22,51,75.50,processed,card,"257 North Villagesfurt, Cleveland, Washington 74010",,2025-04-05 22:17:43.932935+00,2025-04-05 22:17:43.932935+00
+23,52,112.96,processed,card,"21147 West Summitbury, Louisville/Jefferson, Colorado 56441",,2025-04-05 22:17:44.799524+00,2025-04-05 22:17:44.799524+00
+24,53,443.60,processed,card,"477 Isleview, Lexington-Fayette, New Mexico 83245",,2025-04-05 22:17:45.666799+00,2025-04-05 22:17:45.666799+00
+25,54,492.22,processed,card,"2953 Inlettown, San Antonio, Minnesota 20019",,2025-04-05 22:17:46.519934+00,2025-04-05 22:17:46.519934+00
+27,56,394.21,processed,card,"68877 Routeport, Lincoln, Ohio 84860",,2025-04-05 22:17:48.240523+00,2025-04-05 22:17:48.240523+00
+28,57,382.19,delivering,card,"2225 Radialborough, Norfolk, Wisconsin 89940",,2025-04-05 22:17:49.191197+00,2025-04-05 22:17:49.194988+00
+1,30,229.82,delivered,card,"279 Valleysport, Colorado Springs, West Virginia 75481",,2025-04-05 22:17:20.431826+00,2025-04-05 22:41:07.566088+00
+26,55,361.48,processed,card,"111 Roadside, Atlanta, California 36583",,2025-04-05 22:17:47.367+00,2025-04-05 22:17:47.367219+00
+30,17,2402.70,delivered,card,Гоголя 12,,2025-04-04 06:48:09.676+00,2025-04-05 22:48:56.291279+00
+31,171,109.35,processed,card,"957 Roadsfort, Arlington, South Carolina 37353",,2025-04-06 09:48:35.166416+00,2025-04-06 09:48:35.166416+00
+32,172,191.52,processed,card,"209 Port Cornertown, Los Angeles, Alaska 26435",,2025-04-06 09:48:36.44812+00,2025-04-06 09:48:36.44812+00
+33,173,239.84,processed,card,"56869 Summitmouth, Aurora, New Mexico 40165",,2025-04-06 09:48:37.79048+00,2025-04-06 09:48:37.79048+00
+34,174,433.70,processed,card,"88572 Mountainborough, Toledo, Mississippi 73503",,2025-04-06 09:48:42.758334+00,2025-04-06 09:48:42.758334+00
+35,175,466.63,processed,card,"7987 Causewayview, Sacramento, Massachusetts 87888",,2025-04-06 09:48:44.313999+00,2025-04-06 09:48:44.313999+00
+36,176,258.97,processed,card,"979 Runmouth, Sacramento, Ohio 94045",,2025-04-06 09:48:45.863244+00,2025-04-06 09:48:45.863244+00
+37,177,420.68,processed,card,"5810 Harborshaven, Oklahoma, Pennsylvania 59442",,2025-04-06 09:48:46.863908+00,2025-04-06 09:48:46.863908+00
+38,178,470.13,processed,card,"4135 North Rapidborough, Chandler, Nebraska 82719",,2025-04-06 09:48:47.810962+00,2025-04-06 09:48:47.810962+00
+39,179,495.92,processed,card,"7445 Plainshire, Glendale, Wyoming 39330",,2025-04-06 09:48:48.746449+00,2025-04-06 09:48:48.746449+00
+40,180,159.55,processed,card,"332 North Highwaymouth, Miami, Alaska 66126",,2025-04-06 09:48:49.691995+00,2025-04-06 09:48:49.691995+00
+41,181,224.55,processed,card,"706 South Orchardshire, Laredo, New Hampshire 41933",,2025-04-06 09:48:50.581421+00,2025-04-06 09:48:50.581421+00
+42,182,86.81,processed,card,"5151 Lodgeton, San Antonio, Pennsylvania 68409",,2025-04-06 09:48:51.537512+00,2025-04-06 09:48:51.537512+00
+43,183,143.38,processed,card,"955 Lake Walksfort, Scottsdale, Idaho 12437",,2025-04-06 09:48:52.497824+00,2025-04-06 09:48:52.497824+00
+44,184,214.25,processed,card,"39658 New Courtstad, Oklahoma, Alaska 92174",,2025-04-06 09:48:53.624716+00,2025-04-06 09:48:53.624716+00
+45,185,459.27,processed,card,"341 South Knollland, Santa Ana, New Jersey 81831",,2025-04-06 09:48:55.451555+00,2025-04-06 09:48:55.451555+00
+46,186,230.84,processed,card,"4885 South Portmouth, Durham, Missouri 62542",,2025-04-06 09:48:56.341526+00,2025-04-06 09:48:56.341526+00
+47,187,278.61,processed,card,"4898 Brookside, Lexington-Fayette, Oregon 56417",,2025-04-06 09:48:57.202929+00,2025-04-06 09:48:57.202929+00
+48,188,295.66,processed,card,"2936 Restville, San Jose, Rhode Island 19880",,2025-04-06 09:48:58.081742+00,2025-04-06 09:48:58.081742+00
+49,189,329.53,processed,card,"793 Lake Brooksland, Winston-Salem, Rhode Island 39928",,2025-04-06 09:48:58.949111+00,2025-04-06 09:48:58.949111+00
+50,190,223.30,processed,card,"5230 East Islehaven, North Las Vegas, Georgia 61171",,2025-04-06 09:48:59.84304+00,2025-04-06 09:48:59.84304+00
+51,191,351.66,processed,card,"1665 Expresswaytown, Raleigh, Mississippi 47268",,2025-04-06 09:49:00.71973+00,2025-04-06 09:49:00.71973+00
+52,192,464.05,processed,card,"84288 Vistachester, Sacramento, Florida 89095",,2025-04-06 09:49:01.612773+00,2025-04-06 09:49:01.612773+00
+53,193,341.68,processed,card,"856 Forgesburgh, Las Vegas, Maine 26731",,2025-04-06 09:49:02.484128+00,2025-04-06 09:49:02.484128+00
+54,194,287.81,processed,card,"42550 West Gatewayville, San Antonio, South Dakota 83811",,2025-04-06 09:49:03.347115+00,2025-04-06 09:49:03.347115+00
+55,195,333.71,processed,card,"4431 Port Landmouth, Oklahoma, Nebraska 49488",,2025-04-06 09:49:04.229836+00,2025-04-06 09:49:04.229836+00
+56,196,297.84,processed,card,"242 New Lodgeport, Aurora, New Hampshire 61751",,2025-04-06 09:49:05.112076+00,2025-04-06 09:49:05.112076+00
+57,197,195.17,processed,card,"16352 West Villeville, Detroit, Utah 74888",,2025-04-06 09:49:05.985341+00,2025-04-06 09:49:05.985341+00
+58,198,126.78,delivering,card,"1549 Loopshire, Scottsdale, Missouri 17944",,2025-04-06 09:49:06.87969+00,2025-04-06 09:49:06.882768+00

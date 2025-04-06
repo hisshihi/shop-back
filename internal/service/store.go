@@ -4,20 +4,36 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/hisshihi/shop-back/db/sqlc"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type Store struct {
 	*sqlc.Queries
-	db *sql.DB
+	db      *sql.DB
+	PgxPool *pgxpool.Pool
 }
 
-func NewStore(db *sql.DB) *Store {
+func NewStore(db *sql.DB, pgxPool *pgxpool.Pool) *Store {
 	return &Store{
 		db:      db,
 		Queries: sqlc.New(db),
+		PgxPool: pgxPool,
 	}
+}
+
+func (s *Store) DB() *sql.DB {
+	return s.db
+}
+
+func NewPgxPool(connString string) *pgxpool.Pool {
+	pool, err := pgxpool.Connect(context.Background(), connString)
+	if err != nil {
+		log.Fatalf("Не удалось создать pgx pool: %v", err)
+	}
+	return pool
 }
 
 func (store *Store) execTx(ctx context.Context, fn func(*sqlc.Queries) error) error {
