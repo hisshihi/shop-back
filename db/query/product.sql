@@ -65,3 +65,15 @@ WHERE id = $1;
 -- name: DeleteProductByCategoryID :execrows
 DELETE FROM products
 WHERE category_id = $1;
+
+-- name: GetTopProducts :many
+SELECT 
+  p.id,
+  p.name,
+  SUM(oi.quantity) AS total_sold,
+  SUM(oi.quantity * oi.price) AS total_revenue
+FROM products p
+JOIN order_items oi ON p.id = oi.product_id
+GROUP BY p.id
+ORDER BY total_sold DESC
+LIMIT 10;

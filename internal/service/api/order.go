@@ -230,3 +230,12 @@ func (server *Server) deleteOrder(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusNoContent, nil)
 }
+
+func (server *Server) getSalesStats(ctx *gin.Context) {
+	stats, err := server.store.GetSalesStats(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	ctx.JSON(http.StatusOK, stats)
+}

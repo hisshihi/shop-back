@@ -167,6 +167,54 @@ func (q *Queries) GetOrderWithItems(ctx context.Context, id int64) (GetOrderWith
 	return i, err
 }
 
+const getSalesStats = `-- name: GetSalesStats :many
+SELECT 
+  DATE(o.created_at) AS date,
+  COUNT(DISTINCT o.id) AS total_orders,
+  SUM(oi.quantity) AS total_items,
+  SUM(o.total_amount) AS total_revenue
+FROM orders o
+JOIN order_items oi ON o.id = oi.order_id
+WHERE o.created_at >= NOW() - INTERVAL '1 month'
+GROUP BY DATE(o.created_at)
+ORDER BY date DESC
+`
+
+type GetSalesStatsRow struct {
+	Date         time.Time `json:"date"`
+	TotalOrders  int64     `json:"total_orders"`
+	TotalItems   int64     `json:"total_items"`
+	TotalRevenue string    `json:"total_revenue"`
+}
+
+func (q *Queries) GetSalesStats(ctx context.Context) ([]GetSalesStatsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSalesStats)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetSalesStatsRow{}
+	for rows.Next() {
+		var i GetSalesStatsRow
+		if err := rows.Scan(
+			&i.Date,
+			&i.TotalOrders,
+			&i.TotalItems,
+			&i.TotalRevenue,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const hasUserPurchasedProduct = `-- name: HasUserPurchasedProduct :one
 SELECT EXISTS (
     SELECT 1 

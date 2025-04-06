@@ -330,3 +330,13 @@ func (server *Server) deleteProduct(ctx *gin.Context) {
 		"deleted_products": result.DeleteFavorits,
 	})
 }
+
+func (server *Server) getTopProduct(ctx *gin.Context) {
+	topProduct, err := server.store.GetTopProducts(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, topProduct)
+}

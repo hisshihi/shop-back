@@ -141,6 +141,54 @@ func (q *Queries) GetProductByID(ctx context.Context, id int64) (Product, error)
 	return i, err
 }
 
+const getTopProducts = `-- name: GetTopProducts :many
+SELECT 
+  p.id,
+  p.name,
+  SUM(oi.quantity) AS total_sold,
+  SUM(oi.quantity * oi.price) AS total_revenue
+FROM products p
+JOIN order_items oi ON p.id = oi.product_id
+GROUP BY p.id
+ORDER BY total_sold DESC
+LIMIT 10
+`
+
+type GetTopProductsRow struct {
+	ID           int64  `json:"id"`
+	Name         string `json:"name"`
+	TotalSold    int64  `json:"total_sold"`
+	TotalRevenue string `json:"total_revenue"`
+}
+
+func (q *Queries) GetTopProducts(ctx context.Context) ([]GetTopProductsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTopProducts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetTopProductsRow{}
+	for rows.Next() {
+		var i GetTopProductsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.TotalSold,
+			&i.TotalRevenue,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listProducts = `-- name: ListProducts :many
 SELECT 
     id, 

@@ -160,3 +160,15 @@ GROUP BY
     uo.delivery_address,
     uo.created_at, 
     uo.updated_at;
+
+-- name: GetSalesStats :many
+SELECT 
+  DATE(o.created_at) AS date,
+  COUNT(DISTINCT o.id) AS total_orders,
+  SUM(oi.quantity) AS total_items,
+  SUM(o.total_amount) AS total_revenue
+FROM orders o
+JOIN order_items oi ON o.id = oi.order_id
+WHERE o.created_at >= NOW() - INTERVAL '1 month'
+GROUP BY DATE(o.created_at)
+ORDER BY date DESC;
