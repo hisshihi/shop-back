@@ -239,3 +239,13 @@ func (server *Server) getSalesStats(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, stats)
 }
+
+func (server *Server) getCountOrders(ctx *gin.Context) {
+	count, err := server.store.CountOrders(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, count)
+}

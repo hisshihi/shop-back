@@ -163,12 +163,12 @@ GROUP BY
 
 -- name: GetSalesStats :many
 SELECT 
-  DATE(o.created_at) AS date,
+  DATE(o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-5') AS date,
   COUNT(DISTINCT o.id) AS total_orders,
   SUM(oi.quantity) AS total_items,
   SUM(o.total_amount) AS total_revenue
 FROM orders o
 JOIN order_items oi ON o.id = oi.order_id
-WHERE o.created_at >= NOW() - INTERVAL '1 month'
-GROUP BY DATE(o.created_at)
+WHERE o.created_at >= (NOW() AT TIME ZONE 'Etc/GMT-5' - INTERVAL '1 month') AT TIME ZONE 'UTC'
+GROUP BY DATE(o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Etc/GMT-5')
 ORDER BY date DESC;

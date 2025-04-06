@@ -138,6 +138,7 @@ func (server *Server) setupServer() {
 	adminRoutes.DELETE("/order/:id", server.deleteOrder)
 	adminRoutes.GET("/order-stats", server.getSalesStats)
 	adminRoutes.GET("/top-product", server.getTopProduct)
+	adminRoutes.GET("/count-order", server.getCountOrders)
 
 	server.router = router
 
