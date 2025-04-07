@@ -3,8 +3,12 @@ package api
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"errors"
 	"fmt"
+	"io"
+	ioFS "io/fs"
+	"log"
 	"net/http"
 	"slices"
 	"strings"
@@ -59,6 +63,9 @@ func NewServer(store *service.Store, config config.Config) (*Server, error) {
 
 	return server, nil
 }
+
+//go:embed dist/*
+var staticFiles embed.FS
 
 func (server *Server) setupServer() {
 	gin.SetMode(gin.DebugMode)
@@ -146,6 +153,96 @@ func (server *Server) setupServer() {
 	adminRoutes.GET("/users-count", server.countUsers)
 	adminRoutes.GET("/product-count", server.countProduct)
 	adminRoutes.GET("/order-sum", server.getSumOrders)
+
+	// ВТОРАЯ ЧАСТЬ: НАСТРОЙКА СТАТИЧЕСКИХ ФАЙЛОВ
+	// ----------------------------------------------------
+
+	// Получаем доступ к статическим файлам
+	distFS, err := ioFS.Sub(staticFiles, "dist")
+	if err != nil {
+		log.Printf("Ошибка при создании подфайловой системы: %v", err)
+	}
+
+	// Запрещаем кэширование для всех запросов
+	router.Use(func(c *gin.Context) {
+		c.Header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+		c.Header("Pragma", "no-cache")
+		c.Header("Expires", "0")
+		c.Next()
+	})
+
+	// Обслуживаем assets напрямую
+	assetsFS, _ := ioFS.Sub(staticFiles, "dist/assets")
+	router.StaticFS("/assets", http.FS(assetsFS))
+
+	// Отдельно обрабатываем favicon.ico
+	router.GET("/favicon.ico", func(c *gin.Context) {
+		file, err := distFS.Open("favicon.ico")
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		defer file.Close()
+
+		stat, err := file.Stat()
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		http.ServeContent(c.Writer, c.Request, "favicon.ico", stat.ModTime(), file.(io.ReadSeeker))
+	})
+
+	// Явно регистрируем корневой маршрут
+	router.GET("/", func(c *gin.Context) {
+		file, err := distFS.Open("index.html")
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+		defer file.Close()
+
+		stat, err := file.Stat()
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		http.ServeContent(c.Writer, c.Request, "index.html", stat.ModTime(), file.(io.ReadSeeker))
+	})
+
+	// Обработчик для всех остальных маршрутов (кроме API и статических файлов)
+	router.NoRoute(func(c *gin.Context) {
+		path := c.Request.URL.Path
+
+		// API запросы выводим 404
+		if strings.HasPrefix(path, "/api") {
+			c.JSON(http.StatusNotFound, gin.H{"error": "API endpoint not found"})
+			return
+		}
+
+		// Запросы к assets, которые не нашлись, выводим 404
+		if strings.HasPrefix(path, "/assets/") {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		// Для всех остальных путей отдаем index.html (SPA подход)
+		file, err := distFS.Open("index.html")
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+		defer file.Close()
+
+		stat, err := file.Stat()
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		http.ServeContent(c.Writer, c.Request, "index.html", stat.ModTime(), file.(io.ReadSeeker))
+	})
 
 	server.router = router
 

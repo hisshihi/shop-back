@@ -20,7 +20,7 @@ import (
 
 func (server *Server) createSQLBackup(ctx *gin.Context) {
 	filePath := "./backup.sql"
-	cmd := exec.Command("pg_dump", "-U", "root", "-h", "localhost", "-p", "5432", "-F", "p", "-f", filePath, "shop_db")
+	cmd := exec.Command("pg_dump", "-U", server.config.DBUser, "-h", server.config.DBHost, "-p", server.config.DBPort, "-F", "p", "-f", filePath, server.config.DBDatabase)
 	cmd.Env = append(os.Environ(), "PGPASSWORD=secret")
 
 	output, err := cmd.CombinedOutput() // Получаем как стандартный вывод, так и вывод ошибок
