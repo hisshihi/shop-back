@@ -13,6 +13,11 @@ type Config struct {
 	ServerAddress       string        `mapstructure:"SERVER_ADDRESS"`
 	TokenSymmetricKey   string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	DBUser              string        `mapstructure:"DB_USER"`
+	DBPassword          string        `mapstructure:"DB_PASSWORD"`
+	DBHost              string        `mapstructure:"DB_HOST"`
+	DBPort              string        `mapstructure:"DB_PORT"`
+	DBDatabase          string        `mapstructure:"DB_DATABASE"`
 }
 
 func LoadConfig(configName ...string) (config Config, err error) {
@@ -58,4 +63,3 @@ func LoadConfig(configName ...string) (config Config, err error) {
 
 	return config, nil
 }
-
