@@ -12,4 +12,8 @@ docker-compose build
 docker-compose up
 ```
 
-### И заходим в бразуер, куда пишем [Context: "http://localhost:8080"] там будет наш сайт
+### И заходим в бразуер, куда пишем там будет наш сайт
+
+```URL
+http://localhost:8080
+```
